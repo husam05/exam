@@ -1,0 +1,9 @@
+# Sensitive roster with real credentials
+students-name.txt
+
+# OS artifacts
+Thumbs.db
+.DS_Store
+
+# Build output
+*.log

@@ -1,0 +1,3 @@
+# Sample format for roster entries (keep real credentials out of version control)
+# StudentID|Full Name|Password
+LX001|Sample Candidate|SecurePass!2025

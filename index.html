@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Operating System Exam</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+    <noscript>This exam platform requires JavaScript. Please enable it to continue.</noscript>
+    <header class="app-header">
+        <h1>Linux Operating System Exam</h1>
+        <p class="tagline">Secure timed assessment powered by GitHub Copilot</p>
+    </header>
+    <main>
+        <section id="statusBanner" class="hidden"></section>
+        <section id="loginSection" class="card">
+            <h2>Exam Access</h2>
+            <p class="section-intro">Provide your issued student ID, registered name, and one-time exam password.</p>
+            <form id="loginForm" autocomplete="off">
+                <label for="studentId">Student ID</label>
+                <input type="text" id="studentId" name="studentId" placeholder="e.g. LX001" required>
+                <label for="studentName">Full name</label>
+                <input type="text" id="studentName" name="studentName" placeholder="e.g. Sara Hassan" required>
+                <label for="studentPassword">Exam password</label>
+                <input type="password" id="studentPassword" name="studentPassword" placeholder="Provided by invigilator" required>
+                <button type="submit">Unlock Exam</button>
+            </form>
+            <p id="loginFeedback" role="alert" aria-live="polite"></p>
+            <details class="supporting-note">
+                <summary>Having trouble?</summary>
+                <ul>
+                    <li>Ensure the student ID matches the credential slip.</li>
+                    <li>Confirm the spelling matches the record exactly.</li>
+                    <li>Contact your invigilator if your name is missing.</li>
+                    <li>Refresh the page after any edits to <code>students-name.txt</code>.</li>
+                </ul>
+            </details>
+        </section>
+
+        <section id="examSection" class="card hidden" aria-live="polite">
+            <div class="exam-meta">
+                <div>
+                    <strong>Candidate:</strong> <span id="candidateName"></span>
+                </div>
+                <div>
+                    <strong>Student ID:</strong> <span id="candidateId"></span>
+                </div>
+                <div>
+                    <strong>Question:</strong> <span id="questionCounter"></span>
+                </div>
+                <div>
+                    <strong>Auto-graded Score:</strong> <span id="currentScore">0</span>
+                </div>
+            </div>
+            <div class="timer" role="timer">
+                <div class="timer-label">Time remaining</div>
+                <div id="timerDisplay" class="timer-value">00:00</div>
+                <div class="timer-bar">
+                    <span id="timerBar"></span>
+                </div>
+            </div>
+            <article id="questionContainer">
+                <h2 id="questionTitle"></h2>
+                <p id="questionPrompt"></p>
+                <form id="responseForm"></form>
+            </article>
+            <div class="exam-controls">
+                <button id="submitResponse" class="primary">Submit &amp; Continue</button>
+                <button id="skipQuestion" type="button">Skip</button>
+            </div>
+            <div id="questionInfo" class="supporting-note"></div>
+        </section>
+
+        <section id="summarySection" class="card hidden">
+            <h2>Exam Complete</h2>
+            <p id="summaryIntro"></p>
+            <dl class="summary-grid">
+                <div>
+                    <dt>Candidate</dt>
+                    <dd id="summaryName"></dd>
+                </div>
+                <div>
+                    <dt>Student ID</dt>
+                    <dd id="summaryId"></dd>
+                </div>
+                <div>
+                    <dt>Start Time</dt>
+                    <dd id="summaryStart"></dd>
+                </div>
+                <div>
+                    <dt>Finish Time</dt>
+                    <dd id="summaryEnd"></dd>
+                </div>
+                <div>
+                    <dt>Auto-graded Score</dt>
+                    <dd id="summaryScore"></dd>
+                </div>
+            </dl>
+            <button id="downloadReport" class="primary">Download Responses</button>
+            <a id="restartExam" href="index.html">Return to Login</a>
+            <section class="card soft" id="manualReview">
+                <h3>Manual review queue</h3>
+                <p>Short answer, essay, and practical responses require instructor evaluation. These items are included in the download file.</p>
+            </section>
+        </section>
+    </main>
+    <footer class="app-footer">
+        <p>&copy; 2025 Linux Operations Faculty. Deployed via GitHub Pages.</p>
+    </footer>
+    <script src="assets/js/questions.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

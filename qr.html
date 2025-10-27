@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Access QR Code</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        main {
+            width: min(720px, 95vw);
+            margin: 2rem auto;
+        }
+        #qrPreview {
+            text-align: center;
+        }
+        canvas {
+            background: #ffffff;
+            padding: 1rem;
+            border-radius: 16px;
+            box-shadow: 0 16px 30px rgba(31, 41, 51, 0.08);
+        }
+        #examLink {
+            margin-top: 1rem;
+            display: block;
+            text-align: center;
+        }
+        #downloadQr {
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <h1>Linux Exam QR Generator</h1>
+        <p class="tagline">Share secure access to the assessment portal</p>
+    </header>
+    <main class="card">
+        <label for="examUrl">Exam URL</label>
+        <input type="url" id="examUrl" value="https://your-github-username.github.io/online-exam/" required>
+        <button id="refreshQr" class="primary" type="button">Update QR Code</button>
+        <section id="qrPreview">
+            <canvas id="qrCanvas" width="320" height="320"></canvas>
+            <a id="examLink" href="#" target="_blank" rel="noopener">https://your-github-username.github.io/online-exam/</a>
+            <button id="downloadQr" type="button">Download QR PNG</button>
+        </section>
+        <section class="supporting-note">
+            <p>Host the exam with GitHub Pages, update the URL above, then display or print the QR code for students. Remember to distribute each student&rsquo;s ID and password from <code>students-name.txt</code> securely. The image export is a 320&times;320 PNG.</p>
+        </section>
+    </main>
+    <footer class="app-footer">
+        <p>&copy; 2025 Linux Operations Faculty.</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js" integrity="sha384-qzGYwyPTe6kKiC9Y0T4h4PcNI0YtpRBkidl+wmZJ6+oqbr4o6pbVAXtN4PpTIkwX" crossorigin="anonymous"></script>
+    <script>
+        const input = document.getElementById("examUrl");
+        const link = document.getElementById("examLink");
+        const downloadBtn = document.getElementById("downloadQr");
+        const qr = new QRious({
+            element: document.getElementById("qrCanvas"),
+            size: 320,
+            value: input.value
+        });
+
+        function updateQr() {
+            const url = input.value.trim();
+            if (!url) {
+                return;
+            }
+            qr.value = url;
+            link.textContent = url;
+            link.href = url;
+        }
+
+        document.getElementById("refreshQr").addEventListener("click", updateQr);
+
+        downloadBtn.addEventListener("click", () => {
+            updateQr();
+            const linkEl = document.createElement("a");
+            linkEl.href = qr.toDataURL("image/png");
+            linkEl.download = "linux-exam-qr.png";
+            document.body.appendChild(linkEl);
+            linkEl.click();
+            document.body.removeChild(linkEl);
+        });
+
+        updateQr();
+    </script>
+</body>
+</html>

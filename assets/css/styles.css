@@ -1,0 +1,269 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f6f9;
+    color: #1f2933;
+    line-height: 1.6;
+}
+
+main {
+    width: min(960px, 95vw);
+    margin: 2rem auto 4rem;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.app-header,
+.app-footer {
+    background: #1f2933;
+    color: #f4f6f9;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.app-header h1 {
+    margin: 0 0 0.25rem;
+    font-size: clamp(1.6rem, 2.6vw, 2.3rem);
+}
+
+.tagline {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.8;
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 16px 30px rgba(31, 41, 51, 0.08);
+}
+
+.card.soft {
+    background: #f7fafc;
+    box-shadow: none;
+    border: 1px dashed #cbd5e0;
+}
+
+.section-intro {
+    margin-top: 0.25rem;
+    color: #52606d;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="url"],
+textarea {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    border: 1px solid #cbd5e0;
+    font-size: 1rem;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 999px;
+    padding: 0.85rem 1.75rem;
+    font-size: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button.primary {
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    color: #ffffff;
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+}
+
+button.primary:disabled {
+    background: #a3bffa;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+button:not(:disabled):hover {
+    transform: translateY(-1px);
+}
+
+form button {
+    margin-top: 1rem;
+}
+
+ul {
+    margin: 0.75rem 0;
+    padding-left: 1.25rem;
+}
+
+.supporting-note {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #52606d;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.exam-meta {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.timer {
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    background: #f1f5f9;
+}
+
+.timer-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #52606d;
+}
+
+.timer-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1f2933;
+}
+
+.timer-bar {
+    width: 100%;
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 0.75rem;
+}
+
+.timer-bar span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(135deg, #f97316, #ef4444);
+    width: 100%;
+    transform-origin: left;
+}
+
+#questionTitle {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #52606d;
+}
+
+#questionPrompt {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0.75rem 0 1rem;
+}
+
+.option-item {
+    margin-bottom: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    border: 1px solid #cbd5e0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.option-item input {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.exam-controls {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.exam-controls button {
+    flex: 1;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.summary-grid dt {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #52606d;
+}
+
+.summary-grid dd {
+    margin: 0.35rem 0 0;
+    font-size: 1.1rem;
+}
+
+#downloadReport {
+    margin-right: 1rem;
+}
+
+#restartExam {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #2563eb;
+    text-decoration: none;
+}
+
+#restartExam:hover {
+    text-decoration: underline;
+}
+
+#statusBanner {
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.error-text {
+    color: #b91c1c;
+}
+
+.timer-value.urgent {
+    color: #b91c1c;
+}
+
+@media (max-width: 640px) {
+    .exam-controls {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    body {
+        line-height: 1.5;
+    }
+}
