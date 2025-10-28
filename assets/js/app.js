@@ -48,8 +48,14 @@ function cacheDom() {
     elements.loginFeedback = document.getElementById("loginFeedback");
     elements.statusBanner = document.getElementById("statusBanner");
     elements.loginSection = document.getElementById("loginSection");
+    elements.dashboardSection = document.getElementById("dashboardSection");
     elements.examSection = document.getElementById("examSection");
     elements.summarySection = document.getElementById("summarySection");
+    elements.dashboardName = document.getElementById("dashboardName");
+    elements.dashboardNameEn = document.getElementById("dashboardNameEn");
+    elements.dashboardId = document.getElementById("dashboardId");
+    elements.logoutBtn = document.getElementById("logoutBtn");
+    elements.viewMyHistory = document.getElementById("viewMyHistory");
     elements.candidateName = document.getElementById("candidateName");
     elements.candidateNameEn = document.getElementById("candidateNameEn");
     elements.candidateId = document.getElementById("candidateId");
@@ -81,6 +87,18 @@ function cacheDom() {
 
 function bindEvents() {
     elements.loginForm.addEventListener("submit", handleLogin);
+    
+    if (elements.logoutBtn) {
+        elements.logoutBtn.addEventListener("click", handleLogout);
+    }
+    
+    if (elements.viewMyHistory) {
+        elements.viewMyHistory.addEventListener("click", openSavedReportsModal);
+    }
+    
+    // Make startExam available globally
+    window.startExam = startExamFromDashboard;
+    
     elements.submitResponse.addEventListener("click", event => {
         event.preventDefault();
         handleSubmission("submitted");
@@ -225,6 +243,40 @@ function handleLogin(event) {
     elements.studentPasswordInput.value = "";
     state.studentId = record.id;
     state.studentName = record.name;
+    showDashboard();
+}
+
+function showDashboard() {
+    elements.loginSection.classList.add("hidden");
+    elements.dashboardSection.classList.remove("hidden");
+    
+    if (elements.dashboardName) {
+        elements.dashboardName.textContent = state.studentName;
+    }
+    if (elements.dashboardNameEn) {
+        elements.dashboardNameEn.textContent = state.studentName;
+    }
+    if (elements.dashboardId) {
+        elements.dashboardId.textContent = state.studentId;
+    }
+}
+
+function handleLogout() {
+    if (confirm("هل أنت متأكد من تسجيل الخروج؟ | Are you sure you want to logout?")) {
+        state.studentId = "";
+        state.studentName = "";
+        elements.dashboardSection.classList.add("hidden");
+        elements.examSection.classList.add("hidden");
+        elements.summarySection.classList.add("hidden");
+        elements.loginSection.classList.remove("hidden");
+        elements.loginFeedback.textContent = "";
+        elements.studentIdInput.value = "";
+        elements.studentPasswordInput.value = "";
+    }
+}
+
+function startExamFromDashboard() {
+    elements.dashboardSection.classList.add("hidden");
     beginExam();
 }
 

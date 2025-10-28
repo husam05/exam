@@ -692,6 +692,107 @@ ul {
     font-style: italic;
 }
 
+/* Dashboard Styles */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.student-welcome h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.8rem;
+    color: var(--text);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.dashboard-card {
+    position: relative;
+}
+
+.card-icon {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+}
+
+.dashboard-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.resource-list {
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.resource-item {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #f9fafb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s ease;
+}
+
+.resource-item:hover {
+    border-color: var(--accent);
+    background: #f1f5f9;
+}
+
+.resource-info {
+    flex: 1;
+}
+
+.resource-info h4 {
+    margin: 0 0 0.25rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.resource-info p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.resource-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
+.resource-item button,
+.resource-item a {
+    white-space: nowrap;
+}
+
+.resource-item a.btn {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#logoutBtn {
+    align-self: flex-start;
+}
+
 .hidden {
     display: none !important;
 }
@@ -918,6 +1019,29 @@ textarea {
 
     .card {
         padding: 1.5rem;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dashboard-header button {
+        width: 100%;
+    }
+
+    .resource-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .resource-item button,
+    .resource-item a {
+        width: 100%;
     }
 
     .exam-toolkit {

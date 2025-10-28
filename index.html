@@ -44,6 +44,120 @@
             </div>
         </section>
 
+        <!-- Student Dashboard -->
+        <section id="dashboardSection" class="section hidden">
+            <div class="card dashboard-header">
+                <div class="student-welcome">
+                    <h2>مرحباً، <span id="dashboardName"></span></h2>
+                    <p class="english-subtitle">Welcome, <span id="dashboardNameEn"></span></p>
+                    <p class="student-id-display">رقم الطالب: <span id="dashboardId"></span> | Student ID</p>
+                </div>
+                <button id="logoutBtn" class="btn outline">تسجيل الخروج | Logout</button>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Available Exams -->
+                <div class="card dashboard-card">
+                    <div class="card-icon">📝</div>
+                    <h3>الامتحانات المتاحة</h3>
+                    <p class="english-subtitle">Available Exams</p>
+                    <div id="examsList" class="resource-list">
+                        <div class="resource-item">
+                            <div class="resource-info">
+                                <h4>امتحان أنظمة تشغيل لينكس</h4>
+                                <p class="english-subtitle">Linux Operating System Exam</p>
+                                <p class="resource-meta">29 سؤال • MCQ & True/False | 29 Questions</p>
+                            </div>
+                            <button class="btn primary" onclick="startExam()">ابدأ الامتحان | Start Exam</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignments -->
+                <div class="card dashboard-card">
+                    <div class="card-icon">📚</div>
+                    <h3>الواجبات والتكليفات</h3>
+                    <p class="english-subtitle">Assignments</p>
+                    <div id="assignmentsList" class="resource-list">
+                        <div class="resource-item">
+                            <div class="resource-info">
+                                <h4>لا توجد واجبات حالياً</h4>
+                                <p class="english-subtitle">No assignments at this time</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Announcements -->
+                <div class="card dashboard-card">
+                    <div class="card-icon">📢</div>
+                    <h3>الإعلانات والتنبيهات</h3>
+                    <p class="english-subtitle">Announcements</p>
+                    <div id="announcementsList" class="resource-list">
+                        <div class="resource-item">
+                            <div class="resource-info">
+                                <p><strong>مرحباً بك في منصة التعليم الإلكتروني</strong></p>
+                                <p class="english-subtitle">Welcome to the E-Learning Platform</p>
+                                <p class="resource-meta">د. حسام صالح مهدي | Dr. Husam Salah Mahdi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Materials -->
+                <div class="card dashboard-card">
+                    <div class="card-icon">📖</div>
+                    <h3>المواد الدراسية</h3>
+                    <p class="english-subtitle">Course Materials</p>
+                    <div id="materialsList" class="resource-list">
+                        <div class="resource-item">
+                            <div class="resource-info">
+                                <h4>محاضرات لينكس</h4>
+                                <p class="english-subtitle">Linux Lectures</p>
+                            </div>
+                            <a href="Lecture-1.pdf" target="_blank" class="btn secondary">المحاضرة 1 | Lecture 1</a>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-info">
+                                <h4>محاضرات إضافية</h4>
+                                <p class="english-subtitle">Additional Lectures</p>
+                            </div>
+                            <a href="Lecture-2.pdf" target="_blank" class="btn secondary">المحاضرة 2 | Lecture 2</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions & Guidelines -->
+                <div class="card dashboard-card">
+                    <div class="card-icon">ℹ️</div>
+                    <h3>التعليمات والإرشادات</h3>
+                    <p class="english-subtitle">Instructions & Guidelines</p>
+                    <div id="instructionsList" class="resource-list">
+                        <div class="resource-item">
+                            <div class="resource-info">
+                                <p>• يرجى قراءة التعليمات قبل بدء أي امتحان</p>
+                                <p class="english-subtitle">• Please read instructions before starting any exam</p>
+                                <p>• تأكد من اتصال الإنترنت المستقر</p>
+                                <p class="english-subtitle">• Ensure stable internet connection</p>
+                                <p>• للمساعدة، تواصل مع د. حسام: hussam05@gmail.com</p>
+                                <p class="english-subtitle">• For help, contact Dr. Husam: hussam05@gmail.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Results -->
+                <div class="card dashboard-card">
+                    <div class="card-icon">📊</div>
+                    <h3>نتائجي</h3>
+                    <p class="english-subtitle">My Results</p>
+                    <div id="resultsList" class="resource-list">
+                        <button id="viewMyHistory" class="btn neutral">عرض تقاريري السابقة | View My Reports</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Exam Section -->
         <section id="examSection" class="section hidden">
             <div class="card exam-header">
@@ -181,6 +295,7 @@
         <p class="english-subtitle">&copy; 2024 Technical Cybersecurity Department - Almustafa University. All rights reserved.</p>
     </footer>
 
+    <script src="assets/js/platform-config.js"></script>
     <script src="assets/js/questions.js"></script>
     <script src="assets/js/app.js"></script>
 </body>
