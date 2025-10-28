@@ -105,6 +105,24 @@ footer {
     border-bottom: 3px solid var(--accent);
 }
 
+.header-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.university-logo {
+    max-width: 150px;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.university-logo:hover {
+    transform: scale(1.05);
+}
+
 header h1 {
     font-size: clamp(1.8rem, 3vw, 2.4rem);
     margin: 0 0 0.5rem;
@@ -1506,6 +1524,10 @@ textarea {
 
 /* Responsive for Doctor Dashboard */
 @media (max-width: 768px) {
+    .university-logo {
+        max-width: 100px;
+    }
+
     .monitor-tabs {
         flex-direction: column;
         gap: 0;
