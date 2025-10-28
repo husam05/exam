@@ -1,16 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linux Administration Exam</title>
+    <title>امتحان إدارة أنظمة لينكس | Linux Administration Exam</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="assets/css/animations.css">
 </head>
 <body>
     <header>
-        <h1>🐧 Linux Administration Exam</h1>
-        <p>Computer Science Department • Linux Systems Administration</p>
+        <h1>🐧 امتحان إدارة أنظمة لينكس</h1>
+        <h2 class="english-title">Linux Administration Exam</h2>
+        <p>قسم علوم الحاسوب • إدارة أنظمة لينكس</p>
+        <p class="english-subtitle">Computer Science Department • Linux Systems Administration</p>
     </header>
 
     <main>
@@ -20,17 +25,20 @@
         <!-- Login Section -->
         <section id="loginSection" class="section">
             <div class="card">
-                <h2>Student Login</h2>
+                <h2>تسجيل دخول الطالب</h2>
+                <p class="english-subtitle">Student Login</p>
                 <form id="loginForm">
                     <div class="form-group">
-                        <label for="studentId">Student ID</label>
-                        <input type="text" id="studentId" required placeholder="Enter your Student ID (e.g., LX001)">
+                        <label for="studentId">رقم الطالب الجامعي</label>
+                        <label class="english-label">Student ID</label>
+                        <input type="text" id="studentId" required placeholder="أدخل رقم الطالب (مثال: LX001) | Enter Student ID">
                     </div>
                     <div class="form-group">
-                        <label for="studentPassword">Password</label>
-                        <input type="password" id="studentPassword" required placeholder="Enter your password">
+                        <label for="studentPassword">كلمة المرور</label>
+                        <label class="english-label">Password</label>
+                        <input type="password" id="studentPassword" required placeholder="أدخل كلمة المرور | Enter Password">
                     </div>
-                    <button type="submit" class="btn primary">Login</button>
+                    <button type="submit" class="btn primary">دخول | Login</button>
                     <div id="loginFeedback" class="feedback"></div>
                 </form>
             </div>
@@ -40,25 +48,33 @@
         <section id="examSection" class="section hidden">
             <div class="exam-header">
                 <div class="student-info">
-                    <h3>Welcome, <span id="candidateName"></span></h3>
-                    <p>Student ID: <span id="candidateId"></span></p>
+                    <h3>أهلاً وسهلاً، <span id="candidateName"></span></h3>
+                    <p class="english-subtitle">Welcome, <span id="candidateNameEn"></span></p>
+                    <p>رقم الطالب: <span id="candidateId"></span></p>
                 </div>
                 <div class="progress-info">
                     <div class="question-progress">
-                        Question: <span id="questionCounter">1 / 29</span>
+                        <span>السؤال:</span>
+                        <span id="questionCounter">1 / 29</span>
+                        <span class="english-label">Question</span>
                     </div>
                     <div class="score-display">
-                        Score: <span id="currentScore">0 / 29</span>
+                        <span>النتيجة:</span>
+                        <span id="currentScore">0 / 29</span>
+                        <span class="english-label">Score</span>
                     </div>
                 </div>
             </div>
 
             <div class="question-card">
                 <div class="question-header">
-                    <h4 id="questionTitle">Lecture 1 • Multiple Choice</h4>
+                    <h4 id="questionTitle">المحاضرة 1 • اختيار متعدد</h4>
+                    <p id="questionTitleEn" class="english-subtitle">Lecture 1 • Multiple Choice</p>
                 </div>
                 <div class="question-content">
-                    <p id="questionPrompt">Loading question...</p>
+                    <div class="question-text">
+                        <p id="questionPrompt">Loading question...</p>
+                    </div>
                     <form id="responseForm" class="response-form">
                         <!-- Question options will be inserted here -->
                     </form>
@@ -67,44 +83,57 @@
                     </div>
                 </div>
                 <div class="question-actions">
-                    <button id="submitResponse" class="btn primary">Submit Answer</button>
-                    <button id="nextQuestion" class="btn secondary" style="display: none;">Next Question</button>
+                    <button id="submitResponse" class="btn primary">إرسال الإجابة | Submit Answer</button>
+                    <button id="nextQuestion" class="btn secondary" style="display: none;">السؤال التالي | Next Question</button>
                 </div>
             </div>
-            <p id="questionInfo" class="question-info">Select your answer and click Submit to see the correct answer and explanation.</p>
+            <p id="questionInfo" class="question-info">اختر إجابتك واضغط إرسال لرؤية الإجابة الصحيحة والشرح</p>
+            <p class="question-info english-subtitle">Select your answer and click Submit to see the correct answer and explanation</p>
         </section>
 
         <!-- Summary Section -->
         <section id="summarySection" class="section hidden">
             <div class="card">
-                <h2>🎉 Exam Complete!</h2>
+                <h2>🎉 تم إنجاز الامتحان بنجاح!</h2>
+                <h3 class="english-subtitle">Exam Complete!</h3>
                 <div id="summaryIntro" class="summary-intro">
-                    <p>Congratulations! You have successfully completed the Linux Administration exam.</p>
+                    <p>مبروك! لقد أكملت امتحان إدارة أنظمة لينكس بنجاح</p>
+                    <p class="english-subtitle">Congratulations! You have successfully completed the Linux Administration exam.</p>
                 </div>
                 <div class="summary-details">
                     <div class="summary-row">
-                        <span class="label">Student Name:</span>
+                        <span class="label">اسم الطالب:</span>
+                        <span class="label english-label">Student Name:</span>
                         <span id="summaryName" class="value"></span>
                     </div>
                     <div class="summary-row">
-                        <span class="label">Student ID:</span>
+                        <span class="label">رقم الطالب:</span>
+                        <span class="label english-label">Student ID:</span>
                         <span id="summaryId" class="value"></span>
                     </div>
                     <div class="summary-row">
-                        <span class="label">Start Time:</span>
+                        <span class="label">وقت البداية:</span>
+                        <span class="label english-label">Start Time:</span>
                         <span id="summaryStart" class="value"></span>
                     </div>
                     <div class="summary-row">
-                        <span class="label">End Time:</span>
+                        <span class="label">وقت الانتهاء:</span>
+                        <span class="label english-label">End Time:</span>
                         <span id="summaryEnd" class="value"></span>
                     </div>
                     <div class="summary-row highlight">
-                        <span class="label">Final Score:</span>
+                        <span class="label">النتيجة النهائية:</span>
+                        <span class="label english-label">Final Score:</span>
                         <span id="summaryScore" class="value"></span>
                     </div>
                 </div>
                 <div class="summary-actions">
-                    <button id="downloadReport" class="btn secondary">Download Results</button>
+                    <button id="downloadReport" class="btn primary">تحميل التقرير | Download Report</button>
+                    <button id="downloadPDF" class="btn secondary">تحميل PDF للدكتور | Download PDF for DR</button>
+                </div>
+                <div class="submission-note">
+                    <p class="note-text">💡 يرجى تحميل التقرير وإرساله للدكتور عبر البريد الإلكتروني أو النظام الأكاديمي</p>
+                    <p class="note-text english-subtitle">Please download the report and submit to your instructor via email or academic system</p>
                 </div>
             </div>
         </section>

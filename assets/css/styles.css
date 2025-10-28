@@ -4,10 +4,50 @@
 
 body {
     margin: 0;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Cairo", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background: #f4f6f9;
     color: #1f2933;
-    line-height: 1.6;
+    line-height: 1.8;
+    direction: rtl;
+    text-align: right;
+}
+
+/* English text styling */
+.english-title, .english-subtitle, .english-label {
+    font-family: "Roboto", "Segoe UI", sans-serif;
+    direction: ltr;
+}
+
+.english-title {
+    font-size: 1.2rem;
+    color: #52575c;
+    margin-top: 0.5rem;
+}
+
+.english-subtitle {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    font-style: italic;
+}
+
+.english-label {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+/* Question content should be LTR for English questions */
+.question-text {
+    direction: ltr;
+    text-align: left;
+    font-family: "Roboto", "Segoe UI", sans-serif;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    border-right: 4px solid #3b82f6;
+    margin-bottom: 1rem;
 }
 
 main {
@@ -15,6 +55,32 @@ main {
     margin: 2rem auto 4rem;
     display: grid;
     gap: 1.5rem;
+}
+
+header,
+footer {
+    background: linear-gradient(135deg, #1f2933 0%, #2d3748 100%);
+    color: #f4f6f9;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(31, 41, 51, 0.15);
+}
+
+header h1 {
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+}
+
+header h2.english-title {
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    margin: 0 0 1rem;
+    color: #cbd5e0;
+}
+
+header p {
+    margin: 0.25rem 0;
+    font-size: 1rem;
 }
 
 .app-header,
@@ -108,13 +174,87 @@ main {
     border-radius: 4px;
 }
 
+.explanation-header {
+    font-weight: 600;
+    color: #4338ca;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
 .explanation {
     font-style: italic;
     color: #52575c;
     background: #f8f9fa;
     padding: 0.75rem;
     border-radius: 4px;
-    border-left: 4px solid #6366f1;
+    border-right: 4px solid #6366f1;
+    direction: ltr;
+    text-align: left;
+    font-family: "Roboto", "Segoe UI", sans-serif;
+}
+
+/* Form styling for RTL */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Response form options */
+.option-wrapper {
+    direction: ltr;
+    text-align: left;
+    margin: 0.75rem 0;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.option-wrapper:hover {
+    background: #f1f5f9;
+}
+
+.option-wrapper label {
+    font-family: "Roboto", "Segoe UI", sans-serif;
+    margin-right: 0.5rem;
+    cursor: pointer;
+}
+
+/* Summary section styling */
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.summary-row .label {
+    font-weight: 600;
+    color: #374151;
+}
+
+.summary-row .value {
+    font-family: "Roboto", monospace;
+    color: #1f2937;
+}
+
+.submission-note {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+}
+
+.note-text {
+    margin: 0.5rem 0;
+    color: #1e40af;
 }
 
 .section-intro {

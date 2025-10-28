@@ -1,4 +1,9 @@
 const TYPE_LABELS = {
+    mcq: "اختيار متعدد",
+    truefalse: "صح أم خطأ"
+};
+
+const TYPE_LABELS_EN = {
     mcq: "Multiple Choice",
     truefalse: "True / False"
 };
@@ -42,10 +47,12 @@ function cacheDom() {
     elements.examSection = document.getElementById("examSection");
     elements.summarySection = document.getElementById("summarySection");
     elements.candidateName = document.getElementById("candidateName");
+    elements.candidateNameEn = document.getElementById("candidateNameEn");
     elements.candidateId = document.getElementById("candidateId");
     elements.questionCounter = document.getElementById("questionCounter");
     elements.currentScore = document.getElementById("currentScore");
     elements.questionTitle = document.getElementById("questionTitle");
+    elements.questionTitleEn = document.getElementById("questionTitleEn");
     elements.questionPrompt = document.getElementById("questionPrompt");
     elements.responseForm = document.getElementById("responseForm");
     elements.submitResponse = document.getElementById("submitResponse");
@@ -59,6 +66,7 @@ function cacheDom() {
     elements.summaryEnd = document.getElementById("summaryEnd");
     elements.summaryScore = document.getElementById("summaryScore");
     elements.downloadReport = document.getElementById("downloadReport");
+    elements.downloadPDF = document.getElementById("downloadPDF");
 }
 
 function bindEvents() {
@@ -77,6 +85,7 @@ function bindEvents() {
         }
     });
     elements.downloadReport.addEventListener("click", downloadResponses);
+    elements.downloadPDF.addEventListener("click", downloadPDFReport);
 }
 
 function loadRoster() {
@@ -191,6 +200,9 @@ function beginExam() {
     state.showingResult = false;
     elements.currentScore.textContent = `0 / ${state.autoGradedTotal}`;
     elements.candidateName.textContent = state.studentName;
+    if (elements.candidateNameEn) {
+        elements.candidateNameEn.textContent = state.studentName;
+    }
     if (elements.candidateId) {
         elements.candidateId.textContent = state.studentId;
     }
@@ -203,7 +215,10 @@ function loadQuestion() {
     state.processing = false;
     const question = questions[state.currentIndex];
     elements.questionCounter.textContent = `${state.currentIndex + 1} / ${questions.length}`;
-    elements.questionTitle.textContent = `Lecture ${question.lecture} • ${TYPE_LABELS[question.type]}`;
+    elements.questionTitle.textContent = `المحاضرة ${question.lecture} • ${TYPE_LABELS[question.type]}`;
+    if (elements.questionTitleEn) {
+        elements.questionTitleEn.textContent = `Lecture ${question.lecture} • ${TYPE_LABELS_EN[question.type]}`;
+    }
     elements.questionPrompt.textContent = question.prompt;
     elements.responseForm.innerHTML = "";
     elements.resultFeedback.innerHTML = "";
@@ -328,20 +343,27 @@ function showQuestionResult(question, response, isCorrect) {
     
     if (isCorrect) {
         feedbackHtml += `<div class="result-icon">✓</div>`;
-        feedbackHtml += `<div class="result-text">Correct!</div>`;
+        feedbackHtml += `<div class="result-text">إجابة صحيحة!</div>`;
+        feedbackHtml += `<div class="result-text english-subtitle">Correct!</div>`;
     } else {
         feedbackHtml += `<div class="result-icon">✗</div>`;
-        feedbackHtml += `<div class="result-text">Incorrect</div>`;
+        feedbackHtml += `<div class="result-text">إجابة خاطئة</div>`;
+        feedbackHtml += `<div class="result-text english-subtitle">Incorrect</div>`;
         
         if (question.type === "mcq") {
             const correctOption = question.options.find(opt => opt.key === question.correctAnswer);
-            feedbackHtml += `<div class="correct-answer">Correct answer: ${question.correctAnswer}. ${correctOption.text}</div>`;
+            feedbackHtml += `<div class="correct-answer">الإجابة الصحيحة: ${question.correctAnswer}. ${correctOption.text}</div>`;
+            feedbackHtml += `<div class="correct-answer english-subtitle">Correct answer: ${question.correctAnswer}. ${correctOption.text}</div>`;
         } else if (question.type === "truefalse") {
-            feedbackHtml += `<div class="correct-answer">Correct answer: ${question.correctAnswer ? 'True' : 'False'}</div>`;
+            const arabicAnswer = question.correctAnswer ? 'صحيح' : 'خطأ';
+            const englishAnswer = question.correctAnswer ? 'True' : 'False';
+            feedbackHtml += `<div class="correct-answer">الإجابة الصحيحة: ${arabicAnswer}</div>`;
+            feedbackHtml += `<div class="correct-answer english-subtitle">Correct answer: ${englishAnswer}</div>`;
         }
     }
     
     if (question.explanation) {
+        feedbackHtml += `<div class="explanation-header">الشرح | Explanation:</div>`;
         feedbackHtml += `<div class="explanation">${question.explanation}</div>`;
     }
     
@@ -394,4 +416,155 @@ function downloadResponses() {
     link.download = `${state.studentId}_exam_responses.json`;
     link.click();
     URL.revokeObjectURL(url);
+}
+
+function downloadPDFReport() {
+    // Create a comprehensive HTML report for the instructor
+    const percentage = Math.round((state.score / state.autoGradedTotal) * 100);
+    const duration = state.finishTime - state.startTime;
+    const durationMinutes = Math.round(duration / (1000 * 60));
+    
+    const reportHTML = `
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير امتحان إدارة أنظمة لينكس - ${state.studentName}</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            margin: 20px; 
+            line-height: 1.6; 
+            direction: rtl;
+            text-align: right;
+        }
+        .header { 
+            background: #1f2933; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            border-radius: 8px; 
+            margin-bottom: 20px;
+        }
+        .info-section { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+        }
+        .score-highlight { 
+            background: ${percentage >= 60 ? '#d4edda' : '#f8d7da'}; 
+            color: ${percentage >= 60 ? '#155724' : '#721c24'}; 
+            padding: 15px; 
+            border-radius: 8px; 
+            text-align: center; 
+            font-size: 1.2em; 
+            font-weight: bold; 
+            margin: 20px 0;
+        }
+        .question-item { 
+            border: 1px solid #dee2e6; 
+            margin: 10px 0; 
+            padding: 15px; 
+            border-radius: 8px; 
+        }
+        .correct { background: #d4edda; }
+        .incorrect { background: #f8d7da; }
+        .english-text { 
+            direction: ltr; 
+            text-align: left; 
+            font-family: 'Times New Roman', serif; 
+            background: #f1f3f4; 
+            padding: 10px; 
+            border-radius: 4px; 
+            margin: 10px 0;
+        }
+        .footer { 
+            margin-top: 30px; 
+            padding: 15px; 
+            background: #e9ecef; 
+            border-radius: 8px; 
+            text-align: center; 
+        }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: center; }
+        th { background: #f8f9fa; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🐧 تقرير امتحان إدارة أنظمة لينكس</h1>
+        <h2>Linux Administration Exam Report</h2>
+        <p>قسم علوم الحاسوب - Computer Science Department</p>
+    </div>
+
+    <div class="info-section">
+        <table>
+            <tr><th>اسم الطالب | Student Name</th><td>${state.studentName}</td></tr>
+            <tr><th>رقم الطالب | Student ID</th><td>${state.studentId}</td></tr>
+            <tr><th>تاريخ ووقت البداية | Start Time</th><td>${state.startTime.toLocaleString('ar-EG')} | ${state.startTime.toLocaleString('en-US')}</td></tr>
+            <tr><th>تاريخ ووقت الانتهاء | End Time</th><td>${state.finishTime.toLocaleString('ar-EG')} | ${state.finishTime.toLocaleString('en-US')}</td></tr>
+            <tr><th>المدة الزمنية | Duration</th><td>${durationMinutes} دقيقة | ${durationMinutes} minutes</td></tr>
+            <tr><th>عدد الأسئلة | Total Questions</th><td>${questions.length}</td></tr>
+        </table>
+    </div>
+
+    <div class="score-highlight">
+        النتيجة النهائية | Final Score: ${state.score} / ${state.autoGradedTotal} (${percentage}%)
+        <br>
+        ${percentage >= 90 ? 'ممتاز | Excellent' : percentage >= 80 ? 'جيد جداً | Very Good' : percentage >= 70 ? 'جيد | Good' : percentage >= 60 ? 'مقبول | Pass' : 'راسب | Fail'}
+    </div>
+
+    <h3>تفاصيل الإجابات | Answer Details:</h3>`;
+
+    let questionsHTML = '';
+    state.responses.forEach((response, index) => {
+        const question = questions.find(q => q.questionId === response.questionId) || questions[index];
+        const statusClass = response.correct ? 'correct' : 'incorrect';
+        const statusText = response.correct ? 'صحيح ✓ | Correct ✓' : 'خطأ ✗ | Incorrect ✗';
+        
+        questionsHTML += `
+        <div class="question-item ${statusClass}">
+            <strong>السؤال ${index + 1} | Question ${index + 1}:</strong>
+            <div class="english-text">${question.prompt}</div>
+            <p><strong>إجابة الطالب | Student Answer:</strong> ${formatAnswer(response.response, question.type)}</p>
+            ${!response.correct ? `<p><strong>الإجابة الصحيحة | Correct Answer:</strong> ${formatAnswer(getCorrectAnswer(question), question.type)}</p>` : ''}
+            <p><strong>الحالة | Status:</strong> ${statusText}</p>
+        </div>`;
+    });
+
+    const finalHTML = reportHTML + questionsHTML + `
+    <div class="footer">
+        <p><strong>ملاحظة للدكتور:</strong> هذا التقرير تم إنتاجه تلقائياً من نظام الامتحان الإلكتروني</p>
+        <p><strong>Note for Instructor:</strong> This report was automatically generated from the online exam system</p>
+        <p>تاريخ إنتاج التقرير | Report Generated: ${new Date().toLocaleString('ar-EG')} | ${new Date().toLocaleString('en-US')}</p>
+    </div>
+</body>
+</html>`;
+
+    const blob = new Blob([finalHTML], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${state.studentId}_${state.studentName.replace(/\s+/g, '_')}_Linux_Exam_Report.html`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function formatAnswer(answer, questionType) {
+    if (questionType === 'truefalse') {
+        return answer === true ? 'صحيح | True' : answer === false ? 'خطأ | False' : 'لم يجب | No Answer';
+    }
+    return answer || 'لم يجب | No Answer';
+}
+
+function getCorrectAnswer(question) {
+    if (question.type === 'mcq') {
+        const correctOption = question.options.find(opt => opt.key === question.correctAnswer);
+        return `${question.correctAnswer}. ${correctOption.text}`;
+    } else if (question.type === 'truefalse') {
+        return question.correctAnswer;
+    }
+    return question.correctAnswer;
 }
