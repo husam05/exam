@@ -247,6 +247,7 @@ function handleLogin(event) {
 }
 
 function showDashboard() {
+    console.log("showDashboard called - showing dashboard");
     elements.loginSection.classList.add("hidden");
     elements.dashboardSection.classList.remove("hidden");
     
@@ -259,6 +260,7 @@ function showDashboard() {
     if (elements.dashboardId) {
         elements.dashboardId.textContent = state.studentId;
     }
+    console.log("Dashboard should now be visible");
 }
 
 function handleLogout() {
