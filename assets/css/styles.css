@@ -729,14 +729,128 @@ ul {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 1.5rem;
     margin-bottom: 2rem;
+}
+
+.welcome-badge {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.badge-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2);
+}
+
+.badge-info {
+    flex: 1;
 }
 
 .student-welcome h2 {
     margin: 0 0 0.5rem;
     font-size: 1.8rem;
     color: var(--text);
+}
+
+.student-id-display {
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.id-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.id-value {
+    color: var(--accent);
+    font-weight: 700;
+    font-family: "Roboto", monospace;
+    font-size: 1.1rem;
+    background: #eff6ff;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    display: inline-block;
+    margin-inline-start: 0.5rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.header-actions button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 140px;
+}
+
+.header-actions .english-label {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+/* Quick Stats */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #ffffff, #f9fafb);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-color: var(--accent);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    opacity: 0.9;
+}
+
+.stat-info h4 {
+    margin: 0 0 0.25rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0.25rem 0;
+    font-family: "Roboto", sans-serif;
+}
+
+.stat-info .english-subtitle {
+    font-size: 0.75rem;
+    margin: 0;
 }
 
 .dashboard-grid {
@@ -846,6 +960,71 @@ ul {
 
 #logoutBtn {
     align-self: flex-start;
+}
+
+/* QR Code Modal */
+.qr-modal-content {
+    max-width: 600px;
+}
+
+.qr-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.qr-display {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    border: 3px solid var(--accent);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.qr-info {
+    width: 100%;
+    text-align: center;
+}
+
+.qr-instruction {
+    font-size: 1.05rem;
+    color: var(--text);
+    margin: 0.5rem 0;
+    font-weight: 500;
+}
+
+.qr-details {
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+}
+
+.qr-details p {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.qr-details strong {
+    color: var(--text-muted);
+}
+
+.qr-details span {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+#downloadQR {
+    margin: 1.5rem 0 1rem;
+}
+
+.qr-note {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0.5rem 0;
 }
 
 .hidden {
@@ -1080,9 +1259,33 @@ textarea {
         grid-template-columns: 1fr;
     }
 
+    .quick-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .welcome-badge {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .badge-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+    }
+
     .dashboard-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
+    }
+
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .header-actions button {
+        width: 100%;
     }
 
     .dashboard-header button {
@@ -1097,6 +1300,10 @@ textarea {
     .resource-item button,
     .resource-item a {
         width: 100%;
+    }
+
+    .qr-container {
+        padding: 1rem;
     }
 
     .exam-toolkit {

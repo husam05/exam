@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=2.1">
-    <link rel="stylesheet" href="assets/css/animations.css?v=2.1">
+    <link rel="stylesheet" href="assets/css/styles.css?v=2.2">
+    <link rel="stylesheet" href="assets/css/animations.css?v=2.2">
 </head>
 <body>
     <header>
@@ -52,11 +52,64 @@
         <section id="dashboardSection" class="section hidden">
             <div class="card dashboard-header">
                 <div class="student-welcome">
-                    <h2>مرحباً، <span id="dashboardName"></span></h2>
-                    <p class="english-subtitle">Welcome, <span id="dashboardNameEn"></span></p>
-                    <p class="student-id-display">رقم الطالب: <span id="dashboardId"></span> | Student ID</p>
+                    <div class="welcome-badge">
+                        <div class="badge-icon">👤</div>
+                        <div class="badge-info">
+                            <h2>مرحباً، <span id="dashboardName"></span></h2>
+                            <p class="english-subtitle">Welcome, <span id="dashboardNameEn"></span></p>
+                            <p class="student-id-display">
+                                <span class="id-label">رقم الطالب | Student ID:</span>
+                                <span id="dashboardId" class="id-value"></span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <button id="logoutBtn" class="btn outline">تسجيل الخروج | Logout</button>
+                <div class="header-actions">
+                    <button id="showQRBtn" class="btn secondary">
+                        <span>📱 رمز QR الخاص بي</span>
+                        <span class="english-label">My QR Code</span>
+                    </button>
+                    <button id="logoutBtn" class="btn outline">
+                        <span>تسجيل الخروج</span>
+                        <span class="english-label">Logout</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-info">
+                        <h4>الامتحانات المتاحة</h4>
+                        <p class="stat-number">1</p>
+                        <p class="english-subtitle">Available Exams</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-info">
+                        <h4>المواد الدراسية</h4>
+                        <p class="stat-number">3</p>
+                        <p class="english-subtitle">Course Materials</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <h4>التقارير المحفوظة</h4>
+                        <p class="stat-number" id="savedReportsCount">0</p>
+                        <p class="english-subtitle">Saved Reports</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📢</div>
+                    <div class="stat-info">
+                        <h4>إعلانات جديدة</h4>
+                        <p class="stat-number">2</p>
+                        <p class="english-subtitle">New Announcements</p>
+                    </div>
+                </div>
             </div>
 
             <div class="dashboard-grid">
@@ -178,6 +231,31 @@
                 </div>
             </div>
         </section>
+
+        <!-- QR Code Modal -->
+        <div id="qrModal" class="history-modal hidden" aria-hidden="true" role="dialog">
+            <div class="modal-content qr-modal-content">
+                <button id="closeQR" class="modal-close" aria-label="إغلاق">×</button>
+                <h3>رمز الدخول السريع QR</h3>
+                <p class="english-subtitle">Quick Access QR Code</p>
+                <div class="qr-container">
+                    <div id="qrCode" class="qr-display"></div>
+                    <div class="qr-info">
+                        <p class="qr-instruction">📱 امسح هذا الرمز للدخول المباشر إلى لوحة التحكم الخاصة بك</p>
+                        <p class="qr-instruction english-subtitle">Scan this code for direct access to your dashboard</p>
+                        <div class="qr-details">
+                            <p><strong>اسم الطالب | Student:</strong> <span id="qrStudentName"></span></p>
+                            <p><strong>رقم الطالب | ID:</strong> <span id="qrStudentId"></span></p>
+                        </div>
+                        <button id="downloadQR" class="btn primary">
+                            💾 تحميل رمز QR | Download QR Code
+                        </button>
+                        <p class="qr-note">💡 احتفظ بهذا الرمز في هاتفك للوصول السريع</p>
+                        <p class="qr-note english-subtitle">Keep this code on your phone for quick access</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Exam Section -->
         <section id="examSection" class="section hidden">
@@ -316,8 +394,10 @@
         <p class="english-subtitle">&copy; 2024 Technical Cybersecurity Department - Almustafa University. All rights reserved.</p>
     </footer>
 
-    <script src="assets/js/platform-config.js?v=2.1"></script>
-    <script src="assets/js/questions.js?v=2.1"></script>
-    <script src="assets/js/app.js?v=2.1"></script>
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="assets/js/platform-config.js?v=2.2"></script>
+    <script src="assets/js/questions.js?v=2.2"></script>
+    <script src="assets/js/app.js?v=2.2"></script>
 </body>
 </html>

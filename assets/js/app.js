@@ -36,6 +36,10 @@ document.addEventListener("DOMContentLoaded", () => {
     bindEvents();
     loadRoster();
     elements.currentScore.textContent = `0 / ${state.autoGradedTotal}`;
+    
+    // Check for QR code auto-login
+    checkAutoLogin();
+    
     if (window.location.protocol === "file:") {
         showStatus("Run the exam through a local or hosted web server (e.g. VS Code Live Server or GitHub Pages) so that roster validation works.");
     }
@@ -56,6 +60,14 @@ function cacheDom() {
     elements.dashboardId = document.getElementById("dashboardId");
     elements.logoutBtn = document.getElementById("logoutBtn");
     elements.viewMyHistory = document.getElementById("viewMyHistory");
+    elements.showQRBtn = document.getElementById("showQRBtn");
+    elements.qrModal = document.getElementById("qrModal");
+    elements.closeQR = document.getElementById("closeQR");
+    elements.qrCode = document.getElementById("qrCode");
+    elements.qrStudentName = document.getElementById("qrStudentName");
+    elements.qrStudentId = document.getElementById("qrStudentId");
+    elements.downloadQR = document.getElementById("downloadQR");
+    elements.savedReportsCount = document.getElementById("savedReportsCount");
     elements.candidateName = document.getElementById("candidateName");
     elements.candidateNameEn = document.getElementById("candidateNameEn");
     elements.candidateId = document.getElementById("candidateId");
@@ -94,6 +106,26 @@ function bindEvents() {
     
     if (elements.viewMyHistory) {
         elements.viewMyHistory.addEventListener("click", openSavedReportsModal);
+    }
+    
+    if (elements.showQRBtn) {
+        elements.showQRBtn.addEventListener("click", showQRCode);
+    }
+    
+    if (elements.closeQR) {
+        elements.closeQR.addEventListener("click", closeQRModal);
+    }
+    
+    if (elements.downloadQR) {
+        elements.downloadQR.addEventListener("click", downloadQRCode);
+    }
+    
+    if (elements.qrModal) {
+        elements.qrModal.addEventListener("click", event => {
+            if (event.target === elements.qrModal) {
+                closeQRModal();
+            }
+        });
     }
     
     // Make startExam available globally
@@ -190,6 +222,40 @@ function loadRoster() {
         });
 }
 
+function checkAutoLogin() {
+    // Check if there's a student ID in the URL parameters (from QR code)
+    const urlParams = new URLSearchParams(window.location.search);
+    const studentId = urlParams.get('id');
+    
+    if (studentId) {
+        // Wait for roster to load, then attempt auto-login
+        const checkRoster = setInterval(() => {
+            if (state.rosterLoaded) {
+                clearInterval(checkRoster);
+                const normalized = normalizeId(studentId);
+                const student = state.roster.get(normalized);
+                
+                if (student) {
+                    // Auto-fill the login form
+                    elements.studentIdInput.value = studentId;
+                    elements.loginFeedback.textContent = "تم المسح بنجاح! أدخل كلمة المرور / Scanned successfully! Enter your password";
+                    elements.loginFeedback.style.color = "#27ae60";
+                    elements.studentPasswordInput.focus();
+                } else {
+                    elements.loginFeedback.textContent = "معرف الطالب غير صالح / Invalid student ID";
+                    elements.loginFeedback.style.color = "#e74c3c";
+                }
+                
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }, 100);
+        
+        // Timeout after 5 seconds
+        setTimeout(() => clearInterval(checkRoster), 5000);
+    }
+}
+
 function normalizeId(id) {
     return id.toUpperCase().replace(/\s+/g, "");
 }
@@ -260,7 +326,82 @@ function showDashboard() {
     if (elements.dashboardId) {
         elements.dashboardId.textContent = state.studentId;
     }
+    
+    // Update saved reports count
+    updateSavedReportsCount();
+    
+    // Generate QR code for this student
+    generateQRCode(state.studentId, state.studentName);
+    
     console.log("Dashboard should now be visible");
+}
+
+function generateQRCode(studentId, studentName) {
+    // Clear previous QR code if any
+    if (elements.qrCode) {
+        elements.qrCode.innerHTML = '';
+        
+        // Create QR code with login URL containing student credentials
+        const baseUrl = window.location.origin + window.location.pathname;
+        const qrData = `${baseUrl}?id=${encodeURIComponent(studentId)}`;
+        
+        new QRCode(elements.qrCode, {
+            text: qrData,
+            width: 256,
+            height: 256,
+            colorDark: "#2c3e50",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        // Update student info in QR modal
+        if (elements.qrStudentName) {
+            elements.qrStudentName.textContent = studentName;
+        }
+        if (elements.qrStudentId) {
+            elements.qrStudentId.textContent = studentId;
+        }
+    }
+}
+
+function showQRCode() {
+    if (elements.qrModal) {
+        elements.qrModal.classList.add("show");
+    }
+}
+
+function closeQRModal() {
+    if (elements.qrModal) {
+        elements.qrModal.classList.remove("show");
+    }
+}
+
+function downloadQRCode() {
+    if (!elements.qrCode) return;
+    
+    const canvas = elements.qrCode.querySelector('canvas');
+    if (!canvas) {
+        alert('لا يوجد رمز QR لتحميله / No QR code to download');
+        return;
+    }
+    
+    // Convert canvas to blob and download
+    canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `QR_${state.studentId}_${Date.now()}.png`;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+    });
+}
+
+function updateSavedReportsCount() {
+    const history = JSON.parse(localStorage.getItem("exam_history") || "[]");
+    const studentHistory = history.filter(h => h.studentId === state.studentId);
+    if (elements.savedReportsCount) {
+        elements.savedReportsCount.textContent = studentHistory.length;
+    }
 }
 
 function handleLogout() {
