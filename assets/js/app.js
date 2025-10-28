@@ -171,6 +171,7 @@ function bindEvents() {
     document.addEventListener("keydown", event => {
         if (event.key === "Escape") {
             closeSavedReportsModal();
+            closeQRModal();
         }
     });
 }
@@ -337,6 +338,7 @@ function showDashboard() {
 }
 
 function generateQRCode(studentId, studentName) {
+    console.log("Generating QR code for:", studentId, studentName);
     // Clear previous QR code if any
     if (elements.qrCode) {
         elements.qrCode.innerHTML = '';
@@ -344,6 +346,8 @@ function generateQRCode(studentId, studentName) {
         // Create QR code with login URL containing student credentials
         const baseUrl = window.location.origin + window.location.pathname;
         const qrData = `${baseUrl}?id=${encodeURIComponent(studentId)}`;
+        
+        console.log("QR Data:", qrData);
         
         new QRCode(elements.qrCode, {
             text: qrData,
@@ -354,6 +358,8 @@ function generateQRCode(studentId, studentName) {
             correctLevel: QRCode.CorrectLevel.H
         });
         
+        console.log("QR code generated successfully");
+        
         // Update student info in QR modal
         if (elements.qrStudentName) {
             elements.qrStudentName.textContent = studentName;
@@ -361,18 +367,28 @@ function generateQRCode(studentId, studentName) {
         if (elements.qrStudentId) {
             elements.qrStudentId.textContent = studentId;
         }
+    } else {
+        console.error("QR Code element not found!");
     }
 }
 
 function showQRCode() {
+    console.log("showQRCode called");
     if (elements.qrModal) {
-        elements.qrModal.classList.add("show");
+        elements.qrModal.classList.remove("hidden");
+        elements.qrModal.setAttribute("aria-hidden", "false");
+        console.log("QR Modal shown");
+    } else {
+        console.error("QR Modal element not found!");
     }
 }
 
 function closeQRModal() {
+    console.log("closeQRModal called");
     if (elements.qrModal) {
-        elements.qrModal.classList.remove("show");
+        elements.qrModal.classList.add("hidden");
+        elements.qrModal.setAttribute("aria-hidden", "true");
+        console.log("QR Modal closed");
     }
 }
 
