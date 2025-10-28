@@ -431,7 +431,26 @@ function showSummary() {
     elements.summaryId.textContent = state.studentId;
     elements.summaryStart.textContent = state.startTime.toLocaleString();
     elements.summaryEnd.textContent = state.finishTime.toLocaleString();
-    elements.summaryScore.textContent = `${state.score} / ${state.autoGradedTotal}`;
+    
+    const percentage = state.autoGradedTotal > 0 ? Math.round((state.score / state.autoGradedTotal) * 100) : 0;
+    const gradeStatus = getGradeStatus(percentage);
+    
+    elements.summaryScore.textContent = `${state.score} / ${state.autoGradedTotal} (${percentage}%)`;
+    
+    // Add grade status display
+    const summaryIntro = document.getElementById("summaryIntro");
+    if (summaryIntro) {
+        summaryIntro.innerHTML = `
+            <p>مبروك! لقد أكملت امتحان أنظمة تشغيل لينكس بنجاح</p>
+            <p class="english-subtitle">Congratulations! You have successfully completed the Linux Operating System exam.</p>
+            <div class="grade-status ${gradeStatus.class}">
+                <h3>${gradeStatus.arabicLabel}</h3>
+                <h4 class="english-subtitle">${gradeStatus.englishLabel}</h4>
+                <p class="grade-message">${gradeStatus.arabicMessage}</p>
+                <p class="grade-message english-subtitle">${gradeStatus.englishMessage}</p>
+            </div>
+        `;
+    }
 }
 
 function downloadResponses() {
@@ -522,6 +541,24 @@ function buildHtmlReport() {
         </div>`;
     }).join("\n");
 
+    const gradeStatus = getGradeStatus(percentage);
+    const gradeColorMap = {
+        'grade-excellent': '#10b981',
+        'grade-very-good': '#22c55e',
+        'grade-good': '#3b82f6',
+        'grade-pass': '#f59e0b',
+        'grade-fail': '#ef4444'
+    };
+    const gradeBgMap = {
+        'grade-excellent': '#ecfdf5',
+        'grade-very-good': '#f0fdf4',
+        'grade-good': '#eff6ff',
+        'grade-pass': '#fef3c7',
+        'grade-fail': '#fee2e2'
+    };
+    const gradeColor = gradeColorMap[gradeStatus.class] || '#3b82f6';
+    const gradeBg = gradeBgMap[gradeStatus.class] || '#eff6ff';
+
     return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -562,6 +599,23 @@ function buildHtmlReport() {
             font-weight: bold;
             margin: 20px 0;
         }
+        .grade-status-box {
+            background: ${gradeBg};
+            border: 2px solid ${gradeColor};
+            color: ${gradeColor};
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .grade-status-box h3 {
+            font-size: 1.8em;
+            margin: 0 0 0.5rem;
+        }
+        .grade-status-box p {
+            margin: 0.5rem 0;
+            font-size: 1.1em;
+        }
         .question-item {
             border: 1px solid #e2e8f0;
             margin: 12px 0;
@@ -595,7 +649,7 @@ function buildHtmlReport() {
 </head>
 <body>
     <div class="header">
-        <h1>🐧 تقرير امتحان أنظمة تشغيل لينكس</h1>
+        <h1>تقرير امتحان أنظمة تشغيل لينكس</h1>
         <h2>Linux Operating System Exam Report</h2>
         <p>قسم الأمن السيبراني التقني - جامعة المصطفى</p>
         <p>Technical Cybersecurity Department - Almustafa University</p>
@@ -619,13 +673,22 @@ function buildHtmlReport() {
         ${performanceLabel}
     </div>
 
+    <div class="grade-status-box">
+        <h3>${gradeStatus.arabicLabel}</h3>
+        <h3>${gradeStatus.englishLabel}</h3>
+        <p>${gradeStatus.arabicMessage}</p>
+        <p>${gradeStatus.englishMessage}</p>
+    </div>
+
     <h3>تفاصيل الإجابات | Answer Details:</h3>
     ${questionBlocks}
 
     <div class="footer">
-        <p><strong>تعليمات للدكتور حسام:</strong> يرجى مراجعة الإجابات وتحميل نسخة التقرير المرفقة.</p>
-        <p><strong>Note for Dr. Husam:</strong> This report was generated automatically from the online exam system.</p>
+        <p><strong>تعليمات للدكتور حسام صالح مهدي:</strong> يرجى مراجعة الإجابات وتقديم الملاحظات.</p>
+        <p><strong>Note for Dr. Husam Salah Mahdi:</strong> Please review the answers and provide feedback.</p>
+        <p><strong>للتواصل | Contact:</strong> hussam05@gmail.com</p>
         <p>تم إنشاء التقرير في | Generated at: ${now.toLocaleString('ar-EG')} | ${now.toLocaleString('en-US')}</p>
+        <p style="font-size: 0.9em; opacity: 0.8;">This report was generated automatically from the online exam system and saved to GitHub for review.</p>
     </div>
 </body>
 </html>`;
@@ -646,6 +709,50 @@ function determinePerformanceLabel(percentage) {
     if (percentage >= 70) return 'جيد | Good';
     if (percentage >= 60) return 'مقبول | Pass';
     return 'راسب | Needs Improvement';
+}
+
+function getGradeStatus(percentage) {
+    if (percentage >= 90) {
+        return {
+            class: 'grade-excellent',
+            arabicLabel: '🌟 ممتاز',
+            englishLabel: 'Excellent',
+            arabicMessage: 'أداء رائع! لقد أتقنت المادة بشكل ممتاز.',
+            englishMessage: 'Outstanding performance! You have mastered the material excellently.'
+        };
+    } else if (percentage >= 80) {
+        return {
+            class: 'grade-very-good',
+            arabicLabel: '✨ جيد جداً',
+            englishLabel: 'Very Good',
+            arabicMessage: 'عمل ممتاز! أنت على الطريق الصحيح.',
+            englishMessage: 'Great work! You are on the right track.'
+        };
+    } else if (percentage >= 70) {
+        return {
+            class: 'grade-good',
+            arabicLabel: '👍 جيد',
+            englishLabel: 'Good',
+            arabicMessage: 'أداء جيد. استمر في التحسين.',
+            englishMessage: 'Good performance. Keep improving.'
+        };
+    } else if (percentage >= 60) {
+        return {
+            class: 'grade-pass',
+            arabicLabel: '✓ مقبول',
+            englishLabel: 'Pass',
+            arabicMessage: 'لقد اجتزت الامتحان. يُنصح بالمراجعة.',
+            englishMessage: 'You have passed. Review recommended.'
+        };
+    } else {
+        return {
+            class: 'grade-fail',
+            arabicLabel: '⚠️ غير مقبول',
+            englishLabel: 'Not Passing',
+            arabicMessage: 'يحتاج إلى تحسين. يرجى مراجعة المادة والمحاولة مرة أخرى.',
+            englishMessage: 'Needs improvement. Please review the material and try again.'
+        };
+    }
 }
 
 function downloadAnswerSheet() {
@@ -712,6 +819,7 @@ function sendReportViaEmail() {
     }
 
     const percentage = state.autoGradedTotal > 0 ? Math.round((state.score / state.autoGradedTotal) * 100) : 0;
+    const gradeStatus = getGradeStatus(percentage);
     const subject = encodeURIComponent(`Linux OS Exam Report - ${state.studentName} (${state.studentId})`);
     const bodyLines = [
         'السلام عليكم د. حسام،',
@@ -722,15 +830,17 @@ function sendReportViaEmail() {
         `اسم الطالب: ${state.studentName}`,
         `رقم الطالب: ${state.studentId}`,
         `النتيجة: ${state.score} / ${state.autoGradedTotal} (${percentage}%)`,
+        `التقدير: ${gradeStatus.arabicLabel} | ${gradeStatus.englishLabel}`,
         `معرف الجلسة: ${state.examUid}`,
         '',
         'تم إنشاء التقرير عبر المنصة الإلكترونية. الرجاء الاطلاع عليه.',
         '',
-        'مع خالص التحية،'
+        'مع خالص التحية،',
+        state.studentName
     ];
 
     const body = encodeURIComponent(bodyLines.join('\n'));
-    const mailto = `mailto:dr.husam@almustafa.edu?subject=${subject}&body=${body}`;
+    const mailto = `mailto:hussam05@gmail.com?subject=${subject}&body=${body}`;
     window.location.href = mailto;
 }
 
