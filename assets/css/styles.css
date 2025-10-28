@@ -49,6 +49,74 @@ main {
     border: 1px dashed #cbd5e0;
 }
 
+/* Result Feedback Styles */
+.result-feedback {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.result-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.result-container.correct {
+    background: #f0f9ff;
+    border: 2px solid #0ea5e9;
+}
+
+.result-container.incorrect {
+    background: #fef2f2;
+    border: 2px solid #ef4444;
+}
+
+.result-icon {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.result-container.correct .result-icon {
+    color: #0ea5e9;
+}
+
+.result-container.incorrect .result-icon {
+    color: #ef4444;
+}
+
+.result-text {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.result-container.correct .result-text {
+    color: #0ea5e9;
+}
+
+.result-container.incorrect .result-text {
+    color: #ef4444;
+}
+
+.correct-answer {
+    font-weight: 600;
+    color: #1f2933;
+    background: #e0f2fe;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.explanation {
+    font-style: italic;
+    color: #52575c;
+    background: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 4px;
+    border-left: 4px solid #6366f1;
+}
+
 .section-intro {
     margin-top: 0.25rem;
     color: #52606d;
