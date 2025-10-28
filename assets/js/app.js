@@ -430,7 +430,7 @@ function downloadPDFReport() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقرير امتحان إدارة أنظمة لينكس - ${state.studentName}</title>
+    <title>تقرير امتحان أنظمة تشغيل لينكس - ${state.studentName}</title>
     <style>
         body { 
             font-family: 'Arial', sans-serif; 
@@ -494,9 +494,10 @@ function downloadPDFReport() {
 </head>
 <body>
     <div class="header">
-        <h1>🐧 تقرير امتحان إدارة أنظمة لينكس</h1>
-        <h2>Linux Administration Exam Report</h2>
-        <p>قسم علوم الحاسوب - Computer Science Department</p>
+        <h1>🐧 تقرير امتحان أنظمة تشغيل لينكس</h1>
+        <h2>Linux Operating System Exam Report</h2>
+        <p>قسم الأمن السيبراني التقني - جامعة المصطفى</p>
+        <p>Technical Cybersecurity Department - Almustafa University</p>
     </div>
 
     <div class="info-section">
