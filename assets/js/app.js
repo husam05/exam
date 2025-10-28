@@ -9,6 +9,11 @@ const TYPE_LABELS_EN = {
 };
 
 const LOCAL_STORAGE_KEY = "linuxExamHistory";
+const ONLINE_STUDENTS_KEY = "onlineStudents";
+const DOCTOR_CREDENTIALS = {
+    username: "Dr",
+    password: "987987987"
+};
 
 const AUTO_GRADED_TYPES = new Set(["mcq", "truefalse"]);
 
@@ -26,7 +31,8 @@ const state = {
     processing: false,
     showingResult: false,
     latestReportHtml: "",
-    examUid: null
+    examUid: null,
+    isDoctor: false
 };
 
 const elements = {};
@@ -68,6 +74,19 @@ function cacheDom() {
     elements.qrStudentId = document.getElementById("qrStudentId");
     elements.downloadQR = document.getElementById("downloadQR");
     elements.savedReportsCount = document.getElementById("savedReportsCount");
+    
+    // Doctor Dashboard Elements
+    elements.doctorDashboard = document.getElementById("doctorDashboard");
+    elements.doctorLogout = document.getElementById("doctorLogout");
+    elements.refreshMonitor = document.getElementById("refreshMonitor");
+    elements.onlineCount = document.getElementById("onlineCount");
+    elements.examingCount = document.getElementById("examingCount");
+    elements.completedCount = document.getElementById("completedCount");
+    elements.totalStudents = document.getElementById("totalStudents");
+    elements.onlineStudentsList = document.getElementById("onlineStudentsList");
+    elements.activityLog = document.getElementById("activityLog");
+    elements.resultsList = document.getElementById("resultsList");
+    
     elements.candidateName = document.getElementById("candidateName");
     elements.candidateNameEn = document.getElementById("candidateNameEn");
     elements.candidateId = document.getElementById("candidateId");
@@ -104,6 +123,14 @@ function bindEvents() {
         elements.logoutBtn.addEventListener("click", handleLogout);
     }
     
+    if (elements.doctorLogout) {
+        elements.doctorLogout.addEventListener("click", handleDoctorLogout);
+    }
+    
+    if (elements.refreshMonitor) {
+        elements.refreshMonitor.addEventListener("click", refreshDoctorDashboard);
+    }
+    
     if (elements.viewMyHistory) {
         elements.viewMyHistory.addEventListener("click", openSavedReportsModal);
     }
@@ -127,6 +154,14 @@ function bindEvents() {
             }
         });
     }
+    
+    // Tab switching for doctor dashboard
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tabName = e.target.dataset.tab;
+            switchTab(tabName);
+        });
+    });
     
     // Make startExam available globally
     window.startExam = startExamFromDashboard;
@@ -279,6 +314,13 @@ function handleLogin(event) {
         return;
     }
 
+    // Check if it's doctor login
+    if (enteredId === DOCTOR_CREDENTIALS.username && enteredPassword === DOCTOR_CREDENTIALS.password) {
+        state.isDoctor = true;
+        showDoctorDashboard();
+        return;
+    }
+
     if (!state.rosterLoaded) {
         elements.loginFeedback.textContent = "Student roster is still loading. Please wait.";
         elements.loginFeedback.classList.add("error-text");
@@ -310,6 +352,10 @@ function handleLogin(event) {
     elements.studentPasswordInput.value = "";
     state.studentId = record.id;
     state.studentName = record.name;
+    
+    // Track student login
+    trackStudentOnline(record.id, record.name, "login");
+    
     showDashboard();
 }
 
@@ -422,6 +468,9 @@ function updateSavedReportsCount() {
 
 function handleLogout() {
     if (confirm("هل أنت متأكد من تسجيل الخروج؟ | Are you sure you want to logout?")) {
+        // Track logout
+        trackStudentOnline(state.studentId, state.studentName, "logout");
+        
         state.studentId = "";
         state.studentName = "";
         elements.dashboardSection.classList.add("hidden");
@@ -436,6 +485,10 @@ function handleLogout() {
 
 function startExamFromDashboard() {
     elements.dashboardSection.classList.add("hidden");
+    
+    // Track that student started the exam
+    trackStudentOnline(state.studentId, state.studentName, "startExam");
+    
     beginExam();
 }
 
@@ -632,6 +685,10 @@ function finishExam() {
     state.finishTime = new Date();
     state.latestReportHtml = buildHtmlReport();
     saveExamToLocalHistory(state.latestReportHtml);
+    
+    // Track that student completed the exam
+    trackStudentOnline(state.studentId, state.studentName, "completeExam");
+    
     elements.examSection.classList.add("hidden");
     elements.summarySection.classList.remove("hidden");
     showSummary();
@@ -1225,4 +1282,16 @@ function getCorrectAnswerValue(question) {
         return null;
     }
     return question.correctAnswer;
+}
+
+// ===== Doctor Dashboard Functions =====
+
+function showDoctorDashboard() {
+    console.log('Doctor logged in - showing dashboard');
+    elements.loginSection.classList.add('hidden');
+    if (elements.doctorDashboard) {
+        elements.doctorDashboard.classList.remove('hidden');
+    }
+    refreshDoctorDashboard();
+    setInterval(refreshDoctorDashboard, 10000);
 }

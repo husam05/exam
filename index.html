@@ -48,6 +48,112 @@
             </div>
         </section>
 
+        <!-- Doctor Dashboard -->
+        <section id="doctorDashboard" class="section hidden">
+            <div class="card dashboard-header">
+                <div class="student-welcome">
+                    <div class="welcome-badge">
+                        <div class="badge-icon">👨‍⚕️</div>
+                        <div class="badge-info">
+                            <h2>لوحة تحكم الأستاذ الدكتور</h2>
+                            <p class="english-subtitle">Professor Dashboard</p>
+                            <p class="student-id-display">
+                                <span class="id-label">د. حسام صالح مهدي | Dr. Husam Salah Mahdi</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="refreshMonitor" class="btn secondary">
+                        <span>🔄 تحديث</span>
+                        <span class="english-label">Refresh</span>
+                    </button>
+                    <button id="doctorLogout" class="btn outline">
+                        <span>تسجيل الخروج</span>
+                        <span class="english-label">Logout</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Monitoring Stats -->
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">🟢</div>
+                    <div class="stat-info">
+                        <h4>طلاب متصلون الآن</h4>
+                        <p class="stat-number" id="onlineCount">0</p>
+                        <p class="english-subtitle">Students Online</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-info">
+                        <h4>يقومون بالامتحان</h4>
+                        <p class="stat-number" id="examingCount">0</p>
+                        <p class="english-subtitle">Taking Exam</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <h4>أنهوا الامتحان</h4>
+                        <p class="stat-number" id="completedCount">0</p>
+                        <p class="english-subtitle">Completed</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h4>إجمالي الطلاب</h4>
+                        <p class="stat-number" id="totalStudents">0</p>
+                        <p class="english-subtitle">Total Students</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitoring Tabs -->
+            <div class="card">
+                <div class="monitor-tabs">
+                    <button class="tab-btn active" data-tab="online">
+                        🟢 الطلاب المتصلون | Online Students
+                    </button>
+                    <button class="tab-btn" data-tab="activity">
+                        📊 النشاط الأخير | Recent Activity
+                    </button>
+                    <button class="tab-btn" data-tab="results">
+                        📈 النتائج | Results
+                    </button>
+                </div>
+
+                <!-- Online Students Tab -->
+                <div id="onlineTab" class="tab-content active">
+                    <h3>الطلاب المتصلون الآن</h3>
+                    <p class="english-subtitle">Currently Online Students</p>
+                    <div id="onlineStudentsList" class="students-list">
+                        <p class="no-data">لا يوجد طلاب متصلون حالياً | No students online</p>
+                    </div>
+                </div>
+
+                <!-- Activity Tab -->
+                <div id="activityTab" class="tab-content">
+                    <h3>سجل النشاط</h3>
+                    <p class="english-subtitle">Activity Log</p>
+                    <div id="activityLog" class="activity-list">
+                        <p class="no-data">لا توجد أنشطة حالياً | No activities yet</p>
+                    </div>
+                </div>
+
+                <!-- Results Tab -->
+                <div id="resultsTab" class="tab-content">
+                    <h3>نتائج الامتحانات</h3>
+                    <p class="english-subtitle">Exam Results</p>
+                    <div id="resultsList" class="results-list">
+                        <p class="no-data">لا توجد نتائج حالياً | No results yet</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Student Dashboard -->
         <section id="dashboardSection" class="section hidden">
             <div class="card dashboard-header">
@@ -399,5 +505,6 @@
     <script src="assets/js/platform-config.js?v=2.3"></script>
     <script src="assets/js/questions.js?v=2.3"></script>
     <script src="assets/js/app.js?v=2.3"></script>
+    <script src="assets/js/doctor-monitor.js?v=2.3"></script>
 </body>
 </html>
