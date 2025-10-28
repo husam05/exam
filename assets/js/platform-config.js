@@ -72,17 +72,17 @@ const platformConfig = {
             items: [
                 {
                     name: "المحاضرة 1 | Lecture 1",
-                    link: "Lecture-1.pdf",
+                    link: "L1.pdf",
                     type: "pdf"
                 },
                 {
                     name: "المحاضرة 2 | Lecture 2",
-                    link: "Lecture-2.pdf",
+                    link: "L2.pdf",
                     type: "pdf"
                 },
                 {
                     name: "المحاضرة 3 | Lecture 3",
-                    link: "Lecture-3.pdf",
+                    link: "L3.pdf",
                     type: "pdf"
                 }
             ]
