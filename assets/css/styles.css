@@ -125,6 +125,37 @@ header p.institution {
     opacity: 0.9;
 }
 
+.header-announcement {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 2px solid #f59e0b;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-top: 1.5rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.header-announcement p {
+    margin: 0.25rem 0;
+    color: #92400e;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.header-announcement .english-subtitle {
+    color: #b45309;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+    }
+}
+
 footer {
     border-top: 3px solid var(--accent);
     border-bottom: none;
@@ -787,6 +818,30 @@ ul {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+.urgent-announcement {
+    background: linear-gradient(135deg, #fee2e2, #fecaca) !important;
+    border: 2px solid #ef4444 !important;
+    animation: urgentPulse 2s ease-in-out infinite;
+}
+
+.urgent-announcement .resource-info p {
+    color: #991b1b;
+}
+
+.urgent-announcement .resource-info strong {
+    color: #dc2626;
+    font-size: 1.1rem;
+}
+
+@keyframes urgentPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
 }
 
 #logoutBtn {
