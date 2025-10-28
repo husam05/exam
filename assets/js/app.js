@@ -728,8 +728,8 @@ function showSummary() {
     const summaryIntro = document.getElementById("summaryIntro");
     if (summaryIntro) {
         summaryIntro.innerHTML = `
-            <p>مبروك! لقد أكملت امتحان أنظمة تشغيل لينكس بنجاح</p>
-            <p class="english-subtitle">Congratulations! You have successfully completed the Linux Operating System exam.</p>
+            <p>مبروك! لقد أكملت الامتحان بنجاح</p>
+            <p class="english-subtitle">Congratulations! You have successfully completed the exam.</p>
             <div class="grade-status ${gradeStatus.class}">
                 <h3>${gradeStatus.arabicLabel}</h3>
                 <h4 class="english-subtitle">${gradeStatus.englishLabel}</h4>
@@ -936,10 +936,10 @@ function buildHtmlReport() {
 </head>
 <body>
     <div class="header">
-        <h1>تقرير امتحان أنظمة تشغيل لينكس</h1>
-        <h2>Linux Operating System Exam Report</h2>
-        <p>قسم الأمن السيبراني التقني - جامعة المصطفى</p>
-        <p>Technical Cybersecurity Department - Almustafa University</p>
+        <h1>تقرير الامتحان</h1>
+        <h2>Exam Report</h2>
+        <p>جامعة المصطفى - هندسة تقنيات الأمن السيبراني</p>
+        <p>Almustafa University - Cybersecurity Engineering Technology</p>
     </div>
 
     <div class="info-section">

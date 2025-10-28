@@ -130,12 +130,12 @@ const platformConfig = {
 
     // Platform Settings
     settings: {
-        institutionAr: "قسم الأمن السيبراني التقني - جامعة المصطفى",
-        institutionEn: "Technical Cybersecurity Department - Almustafa University",
+        institutionAr: "جامعة المصطفى - هندسة تقنيات الأمن السيبراني",
+        institutionEn: "Almustafa University - Cybersecurity Engineering Technology",
         instructorName: "د. حسام صالح مهدي | Dr. Husam Salah Mahdi",
         instructorEmail: "hussam05@gmail.com",
         supportEmail: "hussam05@gmail.com",
-        platformName: "منصة التعليم الإلكتروني | E-Learning Platform"
+        platformName: "منصة طلاب المرحلة الثانية | Second Year Students Platform"
     }
 };
 
