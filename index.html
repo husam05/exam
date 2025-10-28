@@ -12,10 +12,10 @@
 </head>
 <body>
     <header>
-        <h1>🐧 امتحان أنظمة تشغيل لينكس</h1>
-        <h2 class="english-title">Linux Operating System</h2>
-        <p>قسم الأمن السيبراني التقني • جامعة المصطفى</p>
-        <p class="english-subtitle">Technical Cybersecurity Department • Almustafa University</p>
+        <h1>امتحان أنظمة تشغيل لينكس</h1>
+        <h2 class="english-title">Linux Operating System Exam</h2>
+        <p class="institution">قسم الأمن السيبراني التقني • جامعة المصطفى</p>
+        <p class="institution english-subtitle">Technical Cybersecurity Department • Almustafa University</p>
     </header>
 
     <main>
@@ -46,27 +46,48 @@
 
         <!-- Exam Section -->
         <section id="examSection" class="section hidden">
-            <div class="exam-header">
+            <div class="card exam-header">
                 <div class="student-info">
                     <h3>أهلاً وسهلاً، <span id="candidateName"></span></h3>
                     <p class="english-subtitle">Welcome, <span id="candidateNameEn"></span></p>
-                    <p>رقم الطالب: <span id="candidateId"></span></p>
+                    <p class="student-id-display">رقم الطالب: <span id="candidateId"></span></p>
                 </div>
                 <div class="progress-info">
                     <div class="question-progress">
-                        <span>السؤال:</span>
-                        <span id="questionCounter">1 / 29</span>
+                        <span class="progress-label">السؤال:</span>
+                        <span id="questionCounter" class="progress-value">1 / 29</span>
                         <span class="english-label">Question</span>
                     </div>
                     <div class="score-display">
-                        <span>النتيجة:</span>
-                        <span id="currentScore">0 / 29</span>
+                        <span class="progress-label">النتيجة:</span>
+                        <span id="currentScore" class="progress-value">0 / 29</span>
                         <span class="english-label">Score</span>
                     </div>
                 </div>
             </div>
 
-            <div class="question-card">
+            <div class="exam-toolkit">
+                <div class="tool-card">
+                    <h4>أدوات النجاح السريعة</h4>
+                    <ul class="tool-list">
+                        <li>اقرأ السؤال بتمعن وحدد الكلمات المفتاحية قبل اختيار الإجابة.</li>
+                        <li>تأكد أن جميع الإجابات باللغة الإنجليزية كما في المحاضرات.</li>
+                        <li>إذا كنت غير متأكد، استخدم زر «السؤال التالي» للعودة لاحقاً.</li>
+                        <li>راقب تقدمك من خلال العداد والنتيجة المباشرة أعلى الصفحة.</li>
+                    </ul>
+                </div>
+                <div class="tool-card english-card">
+                    <h4 class="english-subtitle">Quick Exam Toolkit</h4>
+                    <ul class="tool-list english-subtitle">
+                        <li>Focus on the keywords inside each English question.</li>
+                        <li>Answers remain in English to match Linux command syntax.</li>
+                        <li>Use "Next Question" to revisit tough items without losing time.</li>
+                        <li>Track live progress and score to manage your pacing.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card question-card">
                 <div class="question-header">
                     <h4 id="questionTitle">المحاضرة 1 • اختيار متعدد</h4>
                     <p id="questionTitleEn" class="english-subtitle">Lecture 1 • Multiple Choice</p>
@@ -88,7 +109,7 @@
                 </div>
             </div>
             <p id="questionInfo" class="question-info">اختر إجابتك واضغط إرسال لرؤية الإجابة الصحيحة والشرح</p>
-            <p class="question-info english-subtitle">Select your answer and click Submit to see the correct answer and explanation</p>
+            <p class="question-info english-subtitle">Select your answer and submit to see the correct answer and explanation</p>
         </section>
 
         <!-- Summary Section -->
@@ -130,13 +151,29 @@
                 <div class="summary-actions">
                     <button id="downloadReport" class="btn primary">تحميل التقرير | Download Report</button>
                     <button id="downloadPDF" class="btn secondary">تحميل PDF للدكتور | Download PDF for DR</button>
+                    <button id="downloadSheet" class="btn neutral">تحميل ورقة الإجابات | Download Answer Sheet</button>
+                    <button id="emailReport" class="btn tertiary">إرسال التقرير إلى د. حسام | Email Dr Husam</button>
+                    <button id="viewHistory" class="btn outline">عرض تقاريري المحفوظة | View Saved Reports</button>
                 </div>
                 <div class="submission-note">
                     <p class="note-text">💡 يرجى تحميل التقرير وإرساله للدكتور عبر البريد الإلكتروني أو النظام الأكاديمي</p>
                     <p class="note-text english-subtitle">Please download the report and submit to your instructor via email or academic system</p>
                 </div>
+                <div class="submission-note soft">
+                    <p class="note-text">📁 يتم حفظ نسخة احتياطية من التقرير في هذا الجهاز لتستطيع مراجعته لاحقاً.</p>
+                    <p class="note-text english-subtitle">A backup copy of your report stays on this device so you can review it later.</p>
+                </div>
             </div>
         </section>
+        
+        <div id="savedReportsModal" class="history-modal hidden" aria-hidden="true" role="dialog" aria-labelledby="savedReportsTitle">
+            <div class="modal-content">
+                <button id="closeSavedReports" class="modal-close" aria-label="إغلاق">×</button>
+                <h3 id="savedReportsTitle">🗂️ سجلات الامتحانات المحفوظة</h3>
+                <p class="english-subtitle">Saved Exam History</p>
+                <div id="savedReportsList" class="saved-reports-list"></div>
+            </div>
+        </div>
     </main>
 
     <footer>
@@ -144,7 +181,7 @@
         <p class="english-subtitle">&copy; 2024 Technical Cybersecurity Department - Almustafa University. All rights reserved.</p>
     </footer>
 
-    <script src="assets/js/questions-new.js"></script>
-    <script src="assets/js/app-new.js"></script>
+    <script src="assets/js/questions.js"></script>
+    <script src="assets/js/app.js"></script>
 </body>
 </html>

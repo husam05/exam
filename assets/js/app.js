@@ -8,6 +8,8 @@ const TYPE_LABELS_EN = {
     truefalse: "True / False"
 };
 
+const LOCAL_STORAGE_KEY = "linuxExamHistory";
+
 const AUTO_GRADED_TYPES = new Set(["mcq", "truefalse"]);
 
 const state = {
@@ -22,7 +24,9 @@ const state = {
     score: 0,
     autoGradedTotal: questions.filter(q => AUTO_GRADED_TYPES.has(q.type)).length,
     processing: false,
-    showingResult: false
+    showingResult: false,
+    latestReportHtml: "",
+    examUid: null
 };
 
 const elements = {};
@@ -67,6 +71,12 @@ function cacheDom() {
     elements.summaryScore = document.getElementById("summaryScore");
     elements.downloadReport = document.getElementById("downloadReport");
     elements.downloadPDF = document.getElementById("downloadPDF");
+    elements.downloadSheet = document.getElementById("downloadSheet");
+    elements.emailReport = document.getElementById("emailReport");
+    elements.viewHistory = document.getElementById("viewHistory");
+    elements.savedReportsModal = document.getElementById("savedReportsModal");
+    elements.savedReportsList = document.getElementById("savedReportsList");
+    elements.closeSavedReports = document.getElementById("closeSavedReports");
 }
 
 function bindEvents() {
@@ -86,6 +96,33 @@ function bindEvents() {
     });
     elements.downloadReport.addEventListener("click", downloadResponses);
     elements.downloadPDF.addEventListener("click", downloadPDFReport);
+    if (elements.downloadSheet) {
+        elements.downloadSheet.addEventListener("click", downloadAnswerSheet);
+    }
+    if (elements.emailReport) {
+        elements.emailReport.addEventListener("click", sendReportViaEmail);
+    }
+    if (elements.viewHistory) {
+        elements.viewHistory.addEventListener("click", openSavedReportsModal);
+    }
+    if (elements.closeSavedReports) {
+        elements.closeSavedReports.addEventListener("click", closeSavedReportsModal);
+    }
+    if (elements.savedReportsModal) {
+        elements.savedReportsModal.addEventListener("click", event => {
+            if (event.target === elements.savedReportsModal) {
+                closeSavedReportsModal();
+            }
+        });
+    }
+    if (elements.savedReportsList) {
+        elements.savedReportsList.addEventListener("click", handleSavedReportAction);
+    }
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            closeSavedReportsModal();
+        }
+    });
 }
 
 function loadRoster() {
@@ -198,6 +235,8 @@ function beginExam() {
     state.responses = [];
     state.score = 0;
     state.showingResult = false;
+    state.latestReportHtml = "";
+    state.examUid = `${state.studentId || "candidate"}-${Date.now()}`;
     elements.currentScore.textContent = `0 / ${state.autoGradedTotal}`;
     elements.candidateName.textContent = state.studentName;
     if (elements.candidateNameEn) {
@@ -320,10 +359,16 @@ function handleSubmission(submissionType) {
         elements.currentScore.textContent = `${state.score} / ${state.autoGradedTotal}`;
     }
 
+    const correctValue = getCorrectAnswerValue(question);
+    const responseLabel = formatAnswer(response, question.type, question);
+    const correctLabel = formatAnswer(correctValue, question.type, question);
+
     state.responses.push({
         questionId: question.id,
         question: question.prompt,
         response: response,
+        responseLabel,
+        correctAnswerLabel: correctLabel,
         correct: isCorrect,
         submissionType: submissionType,
         timestamp: new Date()
@@ -374,6 +419,8 @@ function showQuestionResult(question, response, isCorrect) {
 
 function finishExam() {
     state.finishTime = new Date();
+    state.latestReportHtml = buildHtmlReport();
+    saveExamToLocalHistory(state.latestReportHtml);
     elements.examSection.classList.add("hidden");
     elements.summarySection.classList.remove("hidden");
     showSummary();
@@ -397,12 +444,15 @@ function downloadResponses() {
             startTime: state.startTime?.toISOString(),
             finishTime: state.finishTime?.toISOString(),
             score: state.score,
-            total: state.autoGradedTotal
+            total: state.autoGradedTotal,
+            examUid: state.examUid
         },
         responses: state.responses.map(r => ({
             questionId: r.questionId,
             question: r.question,
             response: r.response,
+            responseLabel: r.responseLabel,
+            correctAnswerLabel: r.correctAnswerLabel,
             correct: r.correct,
             submissionType: r.submissionType,
             timestamp: r.timestamp?.toISOString()
@@ -419,77 +469,128 @@ function downloadResponses() {
 }
 
 function downloadPDFReport() {
-    // Create a comprehensive HTML report for the instructor
-    const percentage = Math.round((state.score / state.autoGradedTotal) * 100);
-    const duration = state.finishTime - state.startTime;
-    const durationMinutes = Math.round(duration / (1000 * 60));
-    
-    const reportHTML = `
-<!DOCTYPE html>
+    if (!state.studentId) {
+        alert("يرجى إكمال الامتحان قبل تحميل التقرير. | Please complete the exam before downloading the report.");
+        return;
+    }
+
+    const reportHTML = state.latestReportHtml || buildHtmlReport();
+    state.latestReportHtml = reportHTML;
+    saveExamToLocalHistory(reportHTML);
+
+    const safeName = `${state.studentId}_${state.studentName.replace(/\s+/g, '_')}_Linux_OS_Report.html`;
+    const blob = new Blob([reportHTML], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = safeName;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function buildHtmlReport() {
+    const now = new Date();
+    const startTime = state.startTime ?? now;
+    const finishTime = state.finishTime ?? now;
+    const totalQuestions = questions.length;
+    const percentage = state.autoGradedTotal > 0 ? Math.round((state.score / state.autoGradedTotal) * 100) : 0;
+    const durationInfo = formatDurationLabel(startTime, finishTime);
+    const performanceLabel = determinePerformanceLabel(percentage);
+    const historyId = state.examUid || `${state.studentId || "candidate"}-${Date.now()}`;
+
+    const questionBlocks = state.responses.map((response, index) => {
+        const questionRef = questions.find(q => q.id === response.questionId) || null;
+        const questionType = questionRef?.type || (typeof response.response === "boolean" ? "truefalse" : "mcq");
+        const questionPrompt = questionRef?.prompt || response.question || `Question ${index + 1}`;
+        const studentAnswer = response.responseLabel || formatAnswer(response.response, questionType, questionRef);
+        const correctAnswerValue = questionRef ? getCorrectAnswerValue(questionRef) : null;
+        const correctAnswer = response.correctAnswerLabel || formatAnswer(correctAnswerValue, questionType, questionRef);
+        const statusClass = response.correct ? 'correct' : 'incorrect';
+        const statusText = response.correct ? 'صحيح ✓ | Correct ✓' : 'خطأ ✗ | Incorrect ✗';
+        const typeLabel = `${TYPE_LABELS[questionType] || questionType} | ${TYPE_LABELS_EN[questionType] || questionType}`;
+        const explanation = questionRef?.explanation ? `<p><strong>الشرح | Explanation:</strong> ${questionRef.explanation}</p>` : '';
+
+        return `
+        <div class="question-item ${statusClass}">
+            <strong>السؤال ${index + 1} | Question ${index + 1}:</strong>
+            <div class="english-text">${questionPrompt}</div>
+            <p><strong>نوع السؤال | Type:</strong> ${typeLabel}</p>
+            <p><strong>إجابة الطالب | Student Answer:</strong> ${studentAnswer}</p>
+            ${response.correct ? '' : `<p><strong>الإجابة الصحيحة | Correct Answer:</strong> ${correctAnswer}</p>`}
+            <p><strong>الحالة | Status:</strong> ${statusText}</p>
+            ${explanation}
+        </div>`;
+    }).join("\n");
+
+    return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تقرير امتحان أنظمة تشغيل لينكس - ${state.studentName}</title>
     <style>
-        body { 
-            font-family: 'Arial', sans-serif; 
-            margin: 20px; 
-            line-height: 1.6; 
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            line-height: 1.6;
             direction: rtl;
             text-align: right;
+            background: #f8fafc;
         }
-        .header { 
-            background: #1f2933; 
-            color: white; 
-            padding: 20px; 
-            text-align: center; 
-            border-radius: 8px; 
+        .header {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: white;
+            padding: 24px;
+            text-align: center;
+            border-radius: 14px;
             margin-bottom: 20px;
         }
-        .info-section { 
-            background: #f8f9fa; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin-bottom: 20px; 
+        .info-section {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
         }
-        .score-highlight { 
-            background: ${percentage >= 60 ? '#d4edda' : '#f8d7da'}; 
-            color: ${percentage >= 60 ? '#155724' : '#721c24'}; 
-            padding: 15px; 
-            border-radius: 8px; 
-            text-align: center; 
-            font-size: 1.2em; 
-            font-weight: bold; 
+        .score-highlight {
+            background: ${percentage >= 60 ? '#d4edda' : '#f8d7da'};
+            color: ${percentage >= 60 ? '#155724' : '#721c24'};
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
             margin: 20px 0;
         }
-        .question-item { 
-            border: 1px solid #dee2e6; 
-            margin: 10px 0; 
-            padding: 15px; 
-            border-radius: 8px; 
+        .question-item {
+            border: 1px solid #e2e8f0;
+            margin: 12px 0;
+            padding: 18px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
         }
-        .correct { background: #d4edda; }
-        .incorrect { background: #f8d7da; }
-        .english-text { 
-            direction: ltr; 
-            text-align: left; 
-            font-family: 'Times New Roman', serif; 
-            background: #f1f3f4; 
-            padding: 10px; 
-            border-radius: 4px; 
+        .correct { background: #ecfdf5; }
+        .incorrect { background: #fef2f2; }
+        .english-text {
+            direction: ltr;
+            text-align: left;
+            font-family: 'Times New Roman', serif;
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 6px;
             margin: 10px 0;
         }
-        .footer { 
-            margin-top: 30px; 
-            padding: 15px; 
-            background: #e9ecef; 
-            border-radius: 8px; 
-            text-align: center; 
+        .footer {
+            margin-top: 30px;
+            padding: 18px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            text-align: center;
         }
         table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        th, td { padding: 8px; border: 1px solid #ddd; text-align: center; }
-        th { background: #f8f9fa; font-weight: bold; }
+        th, td { padding: 10px; border: 1px solid #cbd5f5; text-align: center; }
+        th { background: #eef2ff; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -504,68 +605,303 @@ function downloadPDFReport() {
         <table>
             <tr><th>اسم الطالب | Student Name</th><td>${state.studentName}</td></tr>
             <tr><th>رقم الطالب | Student ID</th><td>${state.studentId}</td></tr>
-            <tr><th>تاريخ ووقت البداية | Start Time</th><td>${state.startTime.toLocaleString('ar-EG')} | ${state.startTime.toLocaleString('en-US')}</td></tr>
-            <tr><th>تاريخ ووقت الانتهاء | End Time</th><td>${state.finishTime.toLocaleString('ar-EG')} | ${state.finishTime.toLocaleString('en-US')}</td></tr>
-            <tr><th>المدة الزمنية | Duration</th><td>${durationMinutes} دقيقة | ${durationMinutes} minutes</td></tr>
-            <tr><th>عدد الأسئلة | Total Questions</th><td>${questions.length}</td></tr>
+            <tr><th>معرف الجلسة | Session ID</th><td>${historyId}</td></tr>
+            <tr><th>تاريخ ووقت البداية | Start Time</th><td>${startTime.toLocaleString('ar-EG')} | ${startTime.toLocaleString('en-US')}</td></tr>
+            <tr><th>تاريخ ووقت الانتهاء | End Time</th><td>${finishTime.toLocaleString('ar-EG')} | ${finishTime.toLocaleString('en-US')}</td></tr>
+            <tr><th>المدة الزمنية | Duration</th><td>${durationInfo}</td></tr>
+            <tr><th>عدد الأسئلة | Total Questions</th><td>${totalQuestions}</td></tr>
         </table>
     </div>
 
     <div class="score-highlight">
         النتيجة النهائية | Final Score: ${state.score} / ${state.autoGradedTotal} (${percentage}%)
         <br>
-        ${percentage >= 90 ? 'ممتاز | Excellent' : percentage >= 80 ? 'جيد جداً | Very Good' : percentage >= 70 ? 'جيد | Good' : percentage >= 60 ? 'مقبول | Pass' : 'راسب | Fail'}
+        ${performanceLabel}
     </div>
 
-    <h3>تفاصيل الإجابات | Answer Details:</h3>`;
+    <h3>تفاصيل الإجابات | Answer Details:</h3>
+    ${questionBlocks}
 
-    let questionsHTML = '';
-    state.responses.forEach((response, index) => {
-        const question = questions.find(q => q.questionId === response.questionId) || questions[index];
-        const statusClass = response.correct ? 'correct' : 'incorrect';
-        const statusText = response.correct ? 'صحيح ✓ | Correct ✓' : 'خطأ ✗ | Incorrect ✗';
-        
-        questionsHTML += `
-        <div class="question-item ${statusClass}">
-            <strong>السؤال ${index + 1} | Question ${index + 1}:</strong>
-            <div class="english-text">${question.prompt}</div>
-            <p><strong>إجابة الطالب | Student Answer:</strong> ${formatAnswer(response.response, question.type)}</p>
-            ${!response.correct ? `<p><strong>الإجابة الصحيحة | Correct Answer:</strong> ${formatAnswer(getCorrectAnswer(question), question.type)}</p>` : ''}
-            <p><strong>الحالة | Status:</strong> ${statusText}</p>
-        </div>`;
-    });
-
-    const finalHTML = reportHTML + questionsHTML + `
     <div class="footer">
-        <p><strong>ملاحظة للدكتور:</strong> هذا التقرير تم إنتاجه تلقائياً من نظام الامتحان الإلكتروني</p>
-        <p><strong>Note for Instructor:</strong> This report was automatically generated from the online exam system</p>
-        <p>تاريخ إنتاج التقرير | Report Generated: ${new Date().toLocaleString('ar-EG')} | ${new Date().toLocaleString('en-US')}</p>
+        <p><strong>تعليمات للدكتور حسام:</strong> يرجى مراجعة الإجابات وتحميل نسخة التقرير المرفقة.</p>
+        <p><strong>Note for Dr. Husam:</strong> This report was generated automatically from the online exam system.</p>
+        <p>تم إنشاء التقرير في | Generated at: ${now.toLocaleString('ar-EG')} | ${now.toLocaleString('en-US')}</p>
     </div>
 </body>
 </html>`;
+}
 
-    const blob = new Blob([finalHTML], { type: 'text/html;charset=utf-8' });
+function formatDurationLabel(startTime, finishTime) {
+    const durationMs = Math.max(0, (finishTime?.getTime?.() ?? Date.now()) - (startTime?.getTime?.() ?? Date.now()));
+    if (durationMs < 60000) {
+        return 'أقل من دقيقة | Less than a minute';
+    }
+    const minutes = Math.round(durationMs / 60000);
+    return `${minutes} دقيقة | ${minutes} minutes`;
+}
+
+function determinePerformanceLabel(percentage) {
+    if (percentage >= 90) return 'ممتاز | Excellent';
+    if (percentage >= 80) return 'جيد جداً | Very Good';
+    if (percentage >= 70) return 'جيد | Good';
+    if (percentage >= 60) return 'مقبول | Pass';
+    return 'راسب | Needs Improvement';
+}
+
+function downloadAnswerSheet() {
+    if (!state.studentId) {
+        alert("لا يوجد امتحان مكتمل لتنزيل ورقة الإجابات. | Finish the exam before downloading the answer sheet.");
+        return;
+    }
+
+    const percentage = state.autoGradedTotal > 0 ? Math.round((state.score / state.autoGradedTotal) * 100) : 0;
+    const metadataLines = [
+        ['Student Name', state.studentName],
+        ['Student ID', state.studentId],
+        ['Score', `${state.score} / ${state.autoGradedTotal}`],
+        ['Percentage', `${percentage}%`],
+        ['Generated At', new Date().toLocaleString()],
+        ['Session ID', state.examUid]
+    ].map(row => row.map(formatCsvValue).join(','));
+
+    const header = ['Question #', 'Type', 'Question Prompt', 'Student Answer', 'Correct Answer', 'Status', 'Submission Type'];
+    const rows = state.responses.map((response, index) => {
+        const questionRef = questions.find(q => q.id === response.questionId) || null;
+        const questionType = questionRef?.type || (typeof response.response === "boolean" ? "truefalse" : "mcq");
+        const questionPrompt = questionRef?.prompt || response.question || `Question ${index + 1}`;
+        const studentAnswer = response.responseLabel || formatAnswer(response.response, questionType, questionRef);
+        const correctAnswerValue = questionRef ? getCorrectAnswerValue(questionRef) : null;
+        const correctAnswer = response.correctAnswerLabel || formatAnswer(correctAnswerValue, questionType, questionRef);
+        const status = response.correct ? 'صحيح | Correct' : 'خطأ | Incorrect';
+
+        const typeLabel = `${TYPE_LABELS_EN[questionType] || questionType} | ${TYPE_LABELS[questionType] || questionType}`;
+
+        return [
+            index + 1,
+            typeLabel,
+            questionPrompt,
+            studentAnswer,
+            correctAnswer,
+            status,
+            response.submissionType
+        ].map(formatCsvValue).join(',');
+    });
+
+    const csvContent = [...metadataLines, '', header.map(formatCsvValue).join(','), ...rows].join('\n');
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${state.studentId}_${state.studentName.replace(/\s+/g, '_')}_Linux_Exam_Report.html`;
+    link.download = `${state.studentId}_linux_os_answer_sheet.csv`;
     link.click();
     URL.revokeObjectURL(url);
 }
 
-function formatAnswer(answer, questionType) {
+function formatCsvValue(value) {
+    if (value === null || value === undefined) {
+        return '""';
+    }
+    const stringValue = String(value).replace(/"/g, '""');
+    return `"${stringValue}"`;
+}
+
+function sendReportViaEmail() {
+    if (!state.studentId) {
+        alert("أكمل الامتحان ثم قم بتنزيل التقرير قبل الإرسال. | Complete the exam and download the report before emailing.");
+        return;
+    }
+
+    const percentage = state.autoGradedTotal > 0 ? Math.round((state.score / state.autoGradedTotal) * 100) : 0;
+    const subject = encodeURIComponent(`Linux OS Exam Report - ${state.studentName} (${state.studentId})`);
+    const bodyLines = [
+        'السلام عليكم د. حسام،',
+        '',
+        'أرفق لكم تقرير امتحان أنظمة تشغيل لينكس.',
+        'يرجى إرفاق ملف التقرير الذي تم تنزيله قبل الإرسال.',
+        '',
+        `اسم الطالب: ${state.studentName}`,
+        `رقم الطالب: ${state.studentId}`,
+        `النتيجة: ${state.score} / ${state.autoGradedTotal} (${percentage}%)`,
+        `معرف الجلسة: ${state.examUid}`,
+        '',
+        'تم إنشاء التقرير عبر المنصة الإلكترونية. الرجاء الاطلاع عليه.',
+        '',
+        'مع خالص التحية،'
+    ];
+
+    const body = encodeURIComponent(bodyLines.join('\n'));
+    const mailto = `mailto:dr.husam@almustafa.edu?subject=${subject}&body=${body}`;
+    window.location.href = mailto;
+}
+
+function openSavedReportsModal() {
+    if (!elements.savedReportsModal || !elements.savedReportsList) return;
+    renderSavedReports();
+    elements.savedReportsModal.classList.remove('hidden');
+    elements.savedReportsModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeSavedReportsModal() {
+    if (!elements.savedReportsModal) return;
+    elements.savedReportsModal.classList.add('hidden');
+    elements.savedReportsModal.setAttribute('aria-hidden', 'true');
+}
+
+function renderSavedReports() {
+    if (!elements.savedReportsList) return;
+    const history = loadSavedReports();
+
+    if (!history.length) {
+        elements.savedReportsList.innerHTML = `
+            <div class="saved-report-card">
+                <p>لا توجد تقارير محفوظة حالياً على هذا الجهاز.</p>
+                <p class="english-subtitle">No saved reports found on this device.</p>
+            </div>`;
+        return;
+    }
+
+    const reportCards = history.map((record, index) => {
+        const start = record.startTime ? new Date(record.startTime).toLocaleString() : '—';
+        const finish = record.finishTime ? new Date(record.finishTime).toLocaleString() : '—';
+        return `
+        <div class="saved-report-card">
+            <div class="saved-report-header">
+                <span>${record.studentName} (${record.studentId})</span>
+                <span>${record.score} / ${record.total} • ${record.percentage}%</span>
+            </div>
+            <div class="saved-report-meta">
+                <span>البداية: ${start}</span> • <span>النهاية: ${finish}</span>
+            </div>
+            <div class="saved-report-meta">
+                <span>معرف الجلسة: ${record.examUid}</span>
+            </div>
+            <div class="saved-report-actions">
+                <button class="btn secondary" data-action="download" data-index="${index}">تنزيل التقرير</button>
+                <button class="btn outline" data-action="view" data-index="${index}">عرض في نافذة جديدة</button>
+            </div>
+        </div>`;
+    }).join('\n');
+
+    elements.savedReportsList.innerHTML = reportCards;
+}
+
+function handleSavedReportAction(event) {
+    const target = event.target.closest('button');
+    if (!target) return;
+    const index = Number.parseInt(target.dataset.index, 10);
+    if (Number.isNaN(index)) return;
+
+    if (target.dataset.action === 'view') {
+        viewSavedReport(index);
+    } else if (target.dataset.action === 'download') {
+        downloadSavedReport(index);
+    }
+}
+
+function viewSavedReport(index) {
+    const history = loadSavedReports();
+    const record = history[index];
+    if (!record || !record.reportHtml) {
+        alert('تعذر فتح التقرير المحفوظ.');
+        return;
+    }
+    const blob = new Blob([record.reportHtml], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank', 'noopener');
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function downloadSavedReport(index) {
+    const history = loadSavedReports();
+    const record = history[index];
+    if (!record || !record.reportHtml) {
+        alert('تعذر تنزيل التقرير المحفوظ.');
+        return;
+    }
+    const safeName = `${record.studentId}_${record.studentName.replace(/\s+/g, '_')}_Linux_OS_Report.html`;
+    const blob = new Blob([record.reportHtml], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = safeName;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function loadSavedReports() {
+    if (typeof window === "undefined" || !window.localStorage) {
+        return [];
+    }
+    try {
+        const raw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        console.error('Unable to read saved reports from storage:', error);
+        return [];
+    }
+}
+
+function saveExamToLocalHistory(reportHtml) {
+    if (typeof window === "undefined" || !window.localStorage) {
+        return;
+    }
+    try {
+        if (!state.studentId || !reportHtml) {
+            return;
+        }
+        const history = loadSavedReports().filter(record => record.examUid !== state.examUid);
+        const percentage = state.autoGradedTotal > 0 ? Math.round((state.score / state.autoGradedTotal) * 100) : 0;
+        const record = {
+            examUid: state.examUid,
+            studentId: state.studentId,
+            studentName: state.studentName,
+            startTime: state.startTime?.toISOString?.() ?? null,
+            finishTime: state.finishTime?.toISOString?.() ?? null,
+            score: state.score,
+            total: state.autoGradedTotal,
+            percentage,
+            savedAt: new Date().toISOString(),
+            reportHtml,
+            responses: state.responses.map(r => ({
+                questionId: r.questionId,
+                question: r.question,
+                responseLabel: r.responseLabel,
+                correct: r.correct
+            }))
+        };
+        history.unshift(record);
+        const trimmed = history.slice(0, 10);
+        window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(trimmed));
+    } catch (error) {
+        console.error('Unable to persist exam history:', error);
+    }
+}
+
+function formatAnswer(answer, questionType, questionRef = null) {
+    if (answer === null || answer === undefined || answer === "") {
+        return 'لم يجب | No Answer';
+    }
+
+    if (questionType === 'mcq') {
+        const option = questionRef?.options?.find(opt => opt.key === answer);
+        if (option) {
+            return `${option.key}. ${option.text}`;
+        }
+        return `${answer}`;
+    }
+
     if (questionType === 'truefalse') {
         return answer === true ? 'صحيح | True' : answer === false ? 'خطأ | False' : 'لم يجب | No Answer';
     }
-    return answer || 'لم يجب | No Answer';
+
+    return `${answer}`;
 }
 
-function getCorrectAnswer(question) {
-    if (question.type === 'mcq') {
-        const correctOption = question.options.find(opt => opt.key === question.correctAnswer);
-        return `${question.correctAnswer}. ${correctOption.text}`;
-    } else if (question.type === 'truefalse') {
-        return question.correctAnswer;
+function getCorrectAnswerValue(question) {
+    if (!question) {
+        return null;
     }
     return question.correctAnswer;
 }
