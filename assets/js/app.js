@@ -315,9 +315,20 @@ function handleLogin(event) {
     }
 
     // Check if it's doctor login
+    console.log("Checking credentials:", enteredId, enteredPassword);
+    console.log("Doctor credentials:", DOCTOR_CREDENTIALS);
+    
     if (enteredId === DOCTOR_CREDENTIALS.username && enteredPassword === DOCTOR_CREDENTIALS.password) {
+        console.log("Doctor login detected!");
         state.isDoctor = true;
-        showDoctorDashboard();
+        
+        if (typeof showDoctorDashboard === 'function') {
+            showDoctorDashboard();
+        } else {
+            console.error("showDoctorDashboard function not found!");
+            elements.loginFeedback.textContent = "خطأ في النظام - يرجى تحديث الصفحة | System error - please refresh";
+            elements.loginFeedback.classList.add("error-text");
+        }
         return;
     }
 
@@ -354,7 +365,9 @@ function handleLogin(event) {
     state.studentName = record.name;
     
     // Track student login
-    trackStudentOnline(record.id, record.name, "login");
+    if (typeof trackStudentOnline === 'function') {
+        trackStudentOnline(record.id, record.name, "login");
+    }
     
     showDashboard();
 }
@@ -469,7 +482,9 @@ function updateSavedReportsCount() {
 function handleLogout() {
     if (confirm("هل أنت متأكد من تسجيل الخروج؟ | Are you sure you want to logout?")) {
         // Track logout
-        trackStudentOnline(state.studentId, state.studentName, "logout");
+        if (typeof trackStudentOnline === 'function') {
+            trackStudentOnline(state.studentId, state.studentName, "logout");
+        }
         
         state.studentId = "";
         state.studentName = "";
@@ -487,7 +502,9 @@ function startExamFromDashboard() {
     elements.dashboardSection.classList.add("hidden");
     
     // Track that student started the exam
-    trackStudentOnline(state.studentId, state.studentName, "startExam");
+    if (typeof trackStudentOnline === 'function') {
+        trackStudentOnline(state.studentId, state.studentName, "startExam");
+    }
     
     beginExam();
 }
@@ -687,7 +704,9 @@ function finishExam() {
     saveExamToLocalHistory(state.latestReportHtml);
     
     // Track that student completed the exam
-    trackStudentOnline(state.studentId, state.studentName, "completeExam");
+    if (typeof trackStudentOnline === 'function') {
+        trackStudentOnline(state.studentId, state.studentName, "completeExam");
+    }
     
     elements.examSection.classList.add("hidden");
     elements.summarySection.classList.remove("hidden");
