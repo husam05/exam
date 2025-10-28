@@ -46,7 +46,7 @@ const platformConfig = {
             id: "exam-schedule",
             titleAr: "⚠️ تنبيه هام: موعد الامتحان",
             titleEn: "⚠️ Important: Exam Schedule",
-            message: "امتحان مادة مبادئ لينكس يوم الأحد الساعة 8:30 صباحاً - التاريخ: 2/11/2025",
+            message: "امتحان مادة مبادئ لينكس يوم الأحد الساعة 8:30 صباحاً - التاريخ: 2/11/2025 - امتحان عملي في المختبر",
             author: "د. حسام صالح مهدي | Dr. Husam Salah Mahdi",
             date: "2025-11-02",
             priority: "urgent" // normal, high, urgent
