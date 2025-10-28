@@ -18,24 +18,22 @@
         <section id="statusBanner" class="hidden"></section>
         <section id="loginSection" class="card">
             <h2>Exam Access</h2>
-            <p class="section-intro">Provide your issued student ID, registered name, and one-time exam password.</p>
+            <p class="section-intro">Enter your Student ID as username and your assigned password.</p>
             <form id="loginForm" autocomplete="off">
-                <label for="studentId">Student ID</label>
-                <input type="text" id="studentId" name="studentId" placeholder="e.g. LX001" required>
-                <label for="studentName">Full name</label>
-                <input type="text" id="studentName" name="studentName" placeholder="e.g. Sara Hassan" required>
-                <label for="studentPassword">Exam password</label>
-                <input type="password" id="studentPassword" name="studentPassword" placeholder="Provided by invigilator" required>
-                <button type="submit">Unlock Exam</button>
+                <label for="studentId">Username (Student ID)</label>
+                <input type="text" id="studentId" name="studentId" placeholder="e.g. LX001" required autofocus>
+                <label for="studentPassword">Password</label>
+                <input type="password" id="studentPassword" name="studentPassword" placeholder="Enter your password" required>
+                <button type="submit">Login to Exam</button>
             </form>
             <p id="loginFeedback" role="alert" aria-live="polite"></p>
             <details class="supporting-note">
                 <summary>Having trouble?</summary>
                 <ul>
-                    <li>Ensure the student ID matches the credential slip.</li>
-                    <li>Confirm the spelling matches the record exactly.</li>
-                    <li>Contact your invigilator if your name is missing.</li>
-                    <li>Refresh the page after any edits to <code>students-name.txt</code>.</li>
+                    <li>Use your Student ID (e.g. LX001) as the username</li>
+                    <li>Enter the password provided by your instructor</li>
+                    <li>Both username and password are case-sensitive</li>
+                    <li>Contact your invigilator if credentials don't work</li>
                 </ul>
             </details>
         </section>

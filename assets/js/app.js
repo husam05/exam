@@ -39,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
 function cacheDom() {
     elements.loginForm = document.getElementById("loginForm");
     elements.studentIdInput = document.getElementById("studentId");
-    elements.studentNameInput = document.getElementById("studentName");
     elements.studentPasswordInput = document.getElementById("studentPassword");
     elements.loginFeedback = document.getElementById("loginFeedback");
     elements.statusBanner = document.getElementById("statusBanner");
@@ -133,23 +132,16 @@ function handleLogin(event) {
     elements.loginFeedback.classList.remove("error-text");
 
     const enteredId = elements.studentIdInput.value.trim();
-    const enteredName = elements.studentNameInput.value.trim();
     const enteredPassword = elements.studentPasswordInput.value;
 
     if (!enteredId) {
-        elements.loginFeedback.textContent = "Enter your student ID.";
-        elements.loginFeedback.classList.add("error-text");
-        return;
-    }
-
-    if (!enteredName) {
-        elements.loginFeedback.textContent = "Enter your full name exactly as registered.";
+        elements.loginFeedback.textContent = "Enter your Student ID (username).";
         elements.loginFeedback.classList.add("error-text");
         return;
     }
 
     if (!enteredPassword) {
-        elements.loginFeedback.textContent = "Enter your exam password.";
+        elements.loginFeedback.textContent = "Enter your password.";
         elements.loginFeedback.classList.add("error-text");
         return;
     }
@@ -162,26 +154,20 @@ function handleLogin(event) {
 
     const record = state.roster.get(normalizeId(enteredId));
     if (!record) {
-        elements.loginFeedback.textContent = "Student ID not recognized. Contact your invigilator.";
-        elements.loginFeedback.classList.add("error-text");
-        return;
-    }
-
-    if (normalizeName(enteredName) !== record.nameNormalized) {
-        elements.loginFeedback.textContent = "Name does not match the roster for this ID.";
+        elements.loginFeedback.textContent = "Invalid username (Student ID not found).";
         elements.loginFeedback.classList.add("error-text");
         return;
     }
 
     if (enteredPassword !== record.password) {
-        elements.loginFeedback.textContent = "Incorrect password. Try again or contact your invigilator.";
+        elements.loginFeedback.textContent = "Incorrect password. Please try again.";
         elements.loginFeedback.classList.add("error-text");
         elements.studentPasswordInput.value = "";
         elements.studentPasswordInput.focus();
         return;
     }
 
-    elements.loginFeedback.textContent = "Authentication successful. Starting exam...";
+    elements.loginFeedback.textContent = "Login successful. Starting exam...";
     elements.studentPasswordInput.value = "";
     state.studentId = record.id;
     state.studentName = record.name;
