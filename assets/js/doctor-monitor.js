@@ -376,20 +376,28 @@ function addAnnouncement() {
         createdBy: "د. حسام صلاح مهدي | Dr. Husam Salah Mahdi"
     };
     
-    const announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || "[]");
-    announcements.unshift(announcement);
-    localStorage.setItem(ANNOUNCEMENTS_KEY, JSON.stringify(announcements));
-    
-    // مسح النموذج
-    document.getElementById('announcementTitle').value = '';
-    document.getElementById('announcementContent').value = '';
-    document.getElementById('announcementPriority').checked = false;
-    document.getElementById('assignmentDueDate').value = '';
-    
-    // تحديث القائمة
-    renderDoctorAnnouncements();
-    
-    alert('✅ تم نشر الإعلان بنجاح | Announcement published successfully');
+    try {
+        const announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || "[]");
+        announcements.unshift(announcement);
+        localStorage.setItem(ANNOUNCEMENTS_KEY, JSON.stringify(announcements));
+        
+        console.log("✅ Announcement saved:", announcement);
+        console.log("📦 Total announcements:", announcements.length);
+        
+        // مسح النموذج
+        document.getElementById('announcementTitle').value = '';
+        document.getElementById('announcementContent').value = '';
+        document.getElementById('announcementPriority').checked = false;
+        document.getElementById('assignmentDueDate').value = '';
+        
+        // تحديث القائمة
+        renderDoctorAnnouncements();
+        
+        alert('✅ تم نشر الإعلان بنجاح | Announcement published successfully');
+    } catch (error) {
+        console.error("❌ Error saving announcement:", error);
+        alert('❌ حدث خطأ في حفظ الإعلان | Error saving announcement');
+    }
 }
 
 function deleteAnnouncement(id) {
@@ -397,39 +405,53 @@ function deleteAnnouncement(id) {
         return;
     }
     
-    let announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || "[]");
-    announcements = announcements.filter(a => a.id !== id);
-    localStorage.setItem(ANNOUNCEMENTS_KEY, JSON.stringify(announcements));
-    
-    renderDoctorAnnouncements();
+    try {
+        let announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || "[]");
+        const beforeCount = announcements.length;
+        announcements = announcements.filter(a => a.id !== id);
+        localStorage.setItem(ANNOUNCEMENTS_KEY, JSON.stringify(announcements));
+        
+        console.log(`🗑️ Deleted announcement. Before: ${beforeCount}, After: ${announcements.length}`);
+        
+        renderDoctorAnnouncements();
+    } catch (error) {
+        console.error("❌ Error deleting announcement:", error);
+        alert('❌ حدث خطأ في حذف الإعلان | Error deleting announcement');
+    }
 }
 
 function renderDoctorAnnouncements() {
-    const announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || "[]");
-    const listEl = document.getElementById('announcementsList');
-    
-    if (!listEl) return;
-    
-    if (announcements.length === 0) {
-        listEl.innerHTML = '<p class="no-data">لا توجد إعلانات حالياً | No announcements yet</p>';
-        return;
-    }
-    
-    listEl.innerHTML = announcements.map(announcement => {
-        const typeIcons = {
-            announcement: '📢',
-            assignment: '📝',
-            exam: '📋'
-        };
+    try {
+        const announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || "[]");
+        const listEl = document.getElementById('announcementsList');
         
-        const typeLabels = {
-            announcement: 'إعلان | Announcement',
-            assignment: 'واجب | Assignment',
-            exam: 'إعلان امتحان | Exam Notice'
-        };
+        console.log("🔄 Rendering announcements. Count:", announcements.length);
         
-        const icon = typeIcons[announcement.type] || '📢';
-        const label = typeLabels[announcement.type] || 'إعلان';
+        if (!listEl) {
+            console.warn("⚠️ Announcements list element not found");
+            return;
+        }
+        
+        if (announcements.length === 0) {
+            listEl.innerHTML = '<p class="no-data">لا توجد إعلانات حالياً | No announcements yet</p>';
+            return;
+        }
+        
+        listEl.innerHTML = announcements.map(announcement => {
+            const typeIcons = {
+                announcement: '📢',
+                assignment: '📝',
+                exam: '📋'
+            };
+            
+            const typeLabels = {
+                announcement: 'إعلان | Announcement',
+                assignment: 'واجب | Assignment',
+                exam: 'إعلان امتحان | Exam Notice'
+            };
+            
+            const icon = typeIcons[announcement.type] || '📢';
+            const label = typeLabels[announcement.type] || 'إعلان';
         const priorityBadge = announcement.priority ? '<span class="priority-badge">⭐ مهم | Important</span>' : '';
         const dueDateInfo = announcement.dueDate ? 
             `<p class="announcement-due">📅 موعد التسليم: ${new Date(announcement.dueDate).toLocaleString('ar-EG')}</p>` : '';
@@ -451,6 +473,13 @@ function renderDoctorAnnouncements() {
             </div>
         `;
     }).join('');
+    } catch (error) {
+        console.error("❌ Error rendering announcements:", error);
+        const listEl = document.getElementById('announcementsList');
+        if (listEl) {
+            listEl.innerHTML = '<p class="no-data" style="color: red;">حدث خطأ في تحميل الإعلانات | Error loading announcements</p>';
+        }
+    }
 }
 
 // تحديث نوع الإعلان لإظهار/إخفاء حقل موعد التسليم
