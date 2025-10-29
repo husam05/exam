@@ -244,13 +244,7 @@ function loadRoster() {
             });
 
             state.rosterLoaded = true;
-            if (state.roster.size === 0) {
-                showStatus("No valid student records found in roster file.");
-            } else if (invalidEntries > 0) {
-                showStatus(`Roster loaded: ${state.roster.size} students. ${invalidEntries} invalid entries skipped.`);
-            } else {
-                showStatus(`Roster loaded: ${state.roster.size} students registered.`);
-            }
+            // Roster loaded silently - no status message needed
         })
         .catch(error => {
             console.error("Error loading roster:", error.message);
