@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=2.5">
-    <link rel="stylesheet" href="assets/css/animations.css?v=2.5">
+    <link rel="stylesheet" href="assets/css/styles.css?v=2.6">
+    <link rel="stylesheet" href="assets/css/animations.css?v=2.6">
 </head>
 <body>
     <header>
@@ -126,6 +126,9 @@
                     <button class="tab-btn" data-tab="results">
                         📈 النتائج | Results
                     </button>
+                    <button class="tab-btn" data-tab="examined">
+                        📝 الممتحنون | Examined
+                    </button>
                 </div>
 
                 <!-- Online Students Tab -->
@@ -152,6 +155,51 @@
                     <p class="english-subtitle">Exam Results</p>
                     <div id="resultsList" class="results-list">
                         <p class="no-data">لا توجد نتائج حالياً | No results yet</p>
+                    </div>
+                </div>
+
+                <!-- Examined Students Tab -->
+                <div id="examinedTab" class="tab-content">
+                    <h3>📝 الطلاب الذين أجروا الامتحان</h3>
+                    <p class="english-subtitle">Examined Students</p>
+                    
+                    <div class="examined-filters">
+                        <button onclick="filterExamined('all')" class="filter-btn active" data-filter="all">
+                            الكل | All
+                        </button>
+                        <button onclick="filterExamined('today')" class="filter-btn" data-filter="today">
+                            اليوم | Today
+                        </button>
+                        <button onclick="filterExamined('week')" class="filter-btn" data-filter="week">
+                            هذا الأسبوع | This Week
+                        </button>
+                    </div>
+
+                    <div class="examined-stats">
+                        <div class="stat-card">
+                            <h4>إجمالي الممتحنين</h4>
+                            <p id="totalExamined" class="stat-number">0</p>
+                            <p class="english-subtitle">Total Examined</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>المتوسط العام</h4>
+                            <p id="averageScore" class="stat-number">0%</p>
+                            <p class="english-subtitle">Average Score</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>أعلى درجة</h4>
+                            <p id="highestScore" class="stat-number">0</p>
+                            <p class="english-subtitle">Highest Score</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>أقل درجة</h4>
+                            <p id="lowestScore" class="stat-number">0</p>
+                            <p class="english-subtitle">Lowest Score</p>
+                        </div>
+                    </div>
+
+                    <div id="examinedList" class="examined-list">
+                        <p class="no-data">لا توجد امتحانات | No exams yet</p>
                     </div>
                 </div>
             </div>
@@ -504,10 +552,11 @@
     </footer>
 
     <!-- QR Code Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js?v=2.5"></script>
-    <script src="assets/js/platform-config.js?v=2.5"></script>
-    <script src="assets/js/questions.js?v=2.5"></script>
-    <script src="assets/js/doctor-monitor.js?v=2.5"></script>
-    <script src="assets/js/app.js?v=2.5"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js?v=2.6"></script>
+    <script src="assets/js/platform-config.js?v=2.6"></script>
+    <script src="assets/js/questions.js?v=2.6"></script>
+    <script src="assets/js/doctor-monitor.js?v=2.6"></script>
+    <script src="assets/js/app.js?v=2.6"></script>
 </body>
+</html>
 </html>

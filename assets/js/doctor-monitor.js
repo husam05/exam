@@ -1,5 +1,7 @@
 // ===== Doctor Dashboard Functions =====
 
+let currentFilter = 'all';
+
 function showDoctorDashboard() {
     console.log("Doctor logged in - showing dashboard");
     elements.loginSection.classList.add("hidden");
@@ -29,6 +31,7 @@ function refreshDoctorDashboard() {
     updateOnlineStudents();
     updateActivityLog();
     updateResults();
+    updateExaminedStudents(currentFilter);
 }
 
 function trackStudentOnline(studentId, studentName, action) {
@@ -213,4 +216,116 @@ function switchTab(tabName) {
     
     if (selectedBtn) selectedBtn.classList.add('active');
     if (selectedContent) selectedContent.classList.add('active');
+}
+
+function updateExaminedStudents(filter = 'all') {
+    const history = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+    let filteredHistory = history;
+    
+    // تطبيق الفلتر
+    if (filter === 'today') {
+        const today = new Date().toDateString();
+        filteredHistory = history.filter(record => {
+            const recordDate = new Date(record.finishTime).toDateString();
+            return recordDate === today;
+        });
+    } else if (filter === 'week') {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        filteredHistory = history.filter(record => {
+            const recordDate = new Date(record.finishTime);
+            return recordDate >= weekAgo;
+        });
+    }
+    
+    // حساب الإحصائيات
+    const totalExaminedEl = document.getElementById('totalExamined');
+    if (totalExaminedEl) {
+        totalExaminedEl.textContent = filteredHistory.length;
+    }
+    
+    if (filteredHistory.length > 0) {
+        const scores = filteredHistory.map(r => (r.score / r.autoGradedTotal) * 100);
+        const average = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+        const highest = Math.max(...scores).toFixed(1);
+        const lowest = Math.min(...scores).toFixed(1);
+        
+        const averageScoreEl = document.getElementById('averageScore');
+        const highestScoreEl = document.getElementById('highestScore');
+        const lowestScoreEl = document.getElementById('lowestScore');
+        
+        if (averageScoreEl) averageScoreEl.textContent = average + '%';
+        if (highestScoreEl) highestScoreEl.textContent = highest + '%';
+        if (lowestScoreEl) lowestScoreEl.textContent = lowest + '%';
+    } else {
+        const averageScoreEl = document.getElementById('averageScore');
+        const highestScoreEl = document.getElementById('highestScore');
+        const lowestScoreEl = document.getElementById('lowestScore');
+        
+        if (averageScoreEl) averageScoreEl.textContent = '0%';
+        if (highestScoreEl) highestScoreEl.textContent = '0%';
+        if (lowestScoreEl) lowestScoreEl.textContent = '0%';
+    }
+    
+    // عرض قائمة الممتحنين
+    const examinedListEl = document.getElementById('examinedList');
+    if (examinedListEl) {
+        if (filteredHistory.length === 0) {
+            examinedListEl.innerHTML = '<p class="no-data">لا توجد امتحانات في هذه الفترة | No exams in this period</p>';
+        } else {
+            examinedListEl.innerHTML = filteredHistory.map((record, index) => {
+                const percentage = ((record.score / record.autoGradedTotal) * 100).toFixed(1);
+                const grade = getGradeStatus(percentage);
+                const examDate = new Date(record.finishTime);
+                const timeAgo = getTimeAgo(record.finishTime);
+                const sessionId = record.examUid || 'N/A';
+                
+                return `
+                    <div class="examined-card">
+                        <div class="examined-header">
+                            <div class="examined-rank">#${index + 1}</div>
+                            <div class="examined-student">
+                                <h4>${record.studentName}</h4>
+                                <p class="student-id">🆔 ${record.studentId}</p>
+                            </div>
+                            <div class="examined-score ${grade.class}">
+                                <div class="score-big">${percentage}%</div>
+                                <div class="score-detail">${record.score} / ${record.autoGradedTotal}</div>
+                            </div>
+                        </div>
+                        <div class="examined-details">
+                            <div class="detail-item">
+                                <span class="detail-label">التقدير | Grade:</span>
+                                <span class="grade-badge ${grade.class}">
+                                    ${grade.arabicLabel} | ${grade.englishLabel}
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">وقت الانتهاء | Finished:</span>
+                                <span>📅 ${examDate.toLocaleString('ar-EG')}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">منذ | Time ago:</span>
+                                <span>⏰ ${timeAgo}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+}
+
+function filterExamined(filter) {
+    currentFilter = filter;
+    
+    // تحديث أزرار الفلتر
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-filter') === filter) {
+            btn.classList.add('active');
+        }
+    });
+    
+    updateExaminedStudents(filter);
 }
