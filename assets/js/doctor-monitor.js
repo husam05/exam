@@ -373,7 +373,7 @@ function addAnnouncement() {
         priority: priority,
         dueDate: dueDate || null,
         createdAt: new Date().toISOString(),
-        createdBy: "د. حسام صالح مهدي | Dr. Husam Salah Mahdi"
+        createdBy: "د. حسام صلاح مهدي | Dr. Husam Salah Mahdi"
     };
     
     const announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || "[]");

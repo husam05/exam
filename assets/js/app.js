@@ -968,7 +968,7 @@ function buildHtmlReport() {
     ${questionBlocks}
 
     <div class="footer">
-        <p><strong>تعليمات للدكتور حسام صالح مهدي:</strong> يرجى مراجعة الإجابات وتقديم الملاحظات.</p>
+        <p><strong>تعليمات للدكتور حسام صلاح مهدي:</strong> يرجى مراجعة الإجابات وتقديم الملاحظات.</p>
         <p><strong>Note for Dr. Husam Salah Mahdi:</strong> Please review the answers and provide feedback.</p>
         <p><strong>للتواصل | Contact:</strong> hussam05@gmail.com</p>
         <p>تم إنشاء التقرير في | Generated at: ${now.toLocaleString('ar-EG')} | ${now.toLocaleString('en-US')}</p>

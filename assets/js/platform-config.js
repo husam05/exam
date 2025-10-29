@@ -47,7 +47,7 @@ const platformConfig = {
             titleAr: "⚠️ تنبيه هام: موعد الامتحان",
             titleEn: "⚠️ Important: Exam Schedule",
             message: "امتحان مادة مبادئ لينكس يوم الأحد الساعة 8:30 صباحاً - التاريخ: 2/11/2025 - امتحان عملي في المختبر",
-            author: "د. حسام صالح مهدي | Dr. Husam Salah Mahdi",
+            author: "د. حسام صلاح مهدي | Dr. Husam Salah Mahdi",
             date: "2025-11-02",
             priority: "urgent" // normal, high, urgent
         },
@@ -56,7 +56,7 @@ const platformConfig = {
             titleAr: "مرحباً بك في منصة التعليم الإلكتروني",
             titleEn: "Welcome to the E-Learning Platform",
             message: "نتمنى لك التوفيق في رحلتك التعليمية | We wish you success in your educational journey",
-            author: "د. حسام صالح مهدي | Dr. Husam Salah Mahdi",
+            author: "د. حسام صلاح مهدي | Dr. Husam Salah Mahdi",
             date: "2025-10-28",
             priority: "normal" // normal, high, urgent
         }
@@ -132,7 +132,7 @@ const platformConfig = {
     settings: {
         institutionAr: "جامعة المصطفى - هندسة تقنيات الأمن السيبراني",
         institutionEn: "Almustafa University - Cybersecurity Engineering Technology",
-        instructorName: "د. حسام صالح مهدي | Dr. Husam Salah Mahdi",
+        instructorName: "د. حسام صلاح مهدي | Dr. Husam Salah Mahdi",
         instructorEmail: "hussam05@gmail.com",
         supportEmail: "hussam05@gmail.com",
         platformName: "منصة طلاب المرحلة الثانية | Second Year Students Platform"
