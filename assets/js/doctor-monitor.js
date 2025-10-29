@@ -32,6 +32,7 @@ function refreshDoctorDashboard() {
     updateActivityLog();
     updateResults();
     updateExaminedStudents(currentFilter);
+    renderDoctorAnnouncements();
 }
 
 function trackStudentOnline(studentId, studentName, action) {
@@ -173,13 +174,15 @@ function updateResults() {
             elements.resultsList.innerHTML = '<p class="no-data">لا توجد نتائج حالياً | No results yet</p>';
         } else {
             elements.resultsList.innerHTML = history.slice(0, 10).map(record => {
-                const percentage = ((record.score / record.autoGradedTotal) * 100).toFixed(1);
+                const total = record.total || record.autoGradedTotal || 29;
+                const score = record.score || 0;
+                const percentage = total > 0 ? ((score / total) * 100).toFixed(1) : 0;
                 const grade = getGradeStatus(percentage);
                 
                 return `
                     <div class="result-card">
                         <h4>${record.studentName} (${record.studentId})</h4>
-                        <div class="result-score">${record.score} / ${record.autoGradedTotal}</div>
+                        <div class="result-score">${score} / ${total}</div>
                         <div class="result-grade">${grade.arabicLabel} | ${grade.englishLabel}</div>
                         <p style="margin-top: 0.5rem; font-size: 0.9rem;">
                             ⏰ ${new Date(record.finishTime).toLocaleString('ar-EG')}
@@ -245,7 +248,11 @@ function updateExaminedStudents(filter = 'all') {
     }
     
     if (filteredHistory.length > 0) {
-        const scores = filteredHistory.map(r => (r.score / r.autoGradedTotal) * 100);
+        const scores = filteredHistory.map(r => {
+            const total = r.total || r.autoGradedTotal || 29;
+            const score = r.score || 0;
+            return total > 0 ? (score / total) * 100 : 0;
+        });
         const average = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
         const highest = Math.max(...scores).toFixed(1);
         const lowest = Math.min(...scores).toFixed(1);
@@ -274,7 +281,9 @@ function updateExaminedStudents(filter = 'all') {
             examinedListEl.innerHTML = '<p class="no-data">لا توجد امتحانات في هذه الفترة | No exams in this period</p>';
         } else {
             examinedListEl.innerHTML = filteredHistory.map((record, index) => {
-                const percentage = ((record.score / record.autoGradedTotal) * 100).toFixed(1);
+                const total = record.total || record.autoGradedTotal || 29;
+                const score = record.score || 0;
+                const percentage = total > 0 ? ((score / total) * 100).toFixed(1) : 0;
                 const grade = getGradeStatus(percentage);
                 const examDate = new Date(record.finishTime);
                 const timeAgo = getTimeAgo(record.finishTime);
@@ -290,7 +299,7 @@ function updateExaminedStudents(filter = 'all') {
                             </div>
                             <div class="examined-score ${grade.class}">
                                 <div class="score-big">${percentage}%</div>
-                                <div class="score-detail">${record.score} / ${record.autoGradedTotal}</div>
+                                <div class="score-detail">${score} / ${total}</div>
                             </div>
                         </div>
                         <div class="examined-details">
@@ -328,4 +337,123 @@ function filterExamined(filter) {
     });
     
     updateExaminedStudents(filter);
+}
+
+// ===== Announcements & Assignments Management =====
+
+const ANNOUNCEMENTS_KEY = "platform_announcements";
+
+function addAnnouncement() {
+    const type = document.getElementById('announcementType').value;
+    const title = document.getElementById('announcementTitle').value.trim();
+    const content = document.getElementById('announcementContent').value.trim();
+    const priority = document.getElementById('announcementPriority').checked;
+    const dueDate = document.getElementById('assignmentDueDate').value;
+    
+    if (!title || !content) {
+        alert('يرجى ملء جميع الحقول المطلوبة | Please fill all required fields');
+        return;
+    }
+    
+    const announcement = {
+        id: Date.now(),
+        type: type,
+        title: title,
+        content: content,
+        priority: priority,
+        dueDate: dueDate || null,
+        createdAt: new Date().toISOString(),
+        createdBy: "د. حسام صالح مهدي | Dr. Husam Salah Mahdi"
+    };
+    
+    const announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || "[]");
+    announcements.unshift(announcement);
+    localStorage.setItem(ANNOUNCEMENTS_KEY, JSON.stringify(announcements));
+    
+    // مسح النموذج
+    document.getElementById('announcementTitle').value = '';
+    document.getElementById('announcementContent').value = '';
+    document.getElementById('announcementPriority').checked = false;
+    document.getElementById('assignmentDueDate').value = '';
+    
+    // تحديث القائمة
+    renderDoctorAnnouncements();
+    
+    alert('✅ تم نشر الإعلان بنجاح | Announcement published successfully');
+}
+
+function deleteAnnouncement(id) {
+    if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟ | Are you sure you want to delete this announcement?')) {
+        return;
+    }
+    
+    let announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || "[]");
+    announcements = announcements.filter(a => a.id !== id);
+    localStorage.setItem(ANNOUNCEMENTS_KEY, JSON.stringify(announcements));
+    
+    renderDoctorAnnouncements();
+}
+
+function renderDoctorAnnouncements() {
+    const announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || "[]");
+    const listEl = document.getElementById('announcementsList');
+    
+    if (!listEl) return;
+    
+    if (announcements.length === 0) {
+        listEl.innerHTML = '<p class="no-data">لا توجد إعلانات حالياً | No announcements yet</p>';
+        return;
+    }
+    
+    listEl.innerHTML = announcements.map(announcement => {
+        const typeIcons = {
+            announcement: '📢',
+            assignment: '📝',
+            exam: '📋'
+        };
+        
+        const typeLabels = {
+            announcement: 'إعلان | Announcement',
+            assignment: 'واجب | Assignment',
+            exam: 'إعلان امتحان | Exam Notice'
+        };
+        
+        const icon = typeIcons[announcement.type] || '📢';
+        const label = typeLabels[announcement.type] || 'إعلان';
+        const priorityBadge = announcement.priority ? '<span class="priority-badge">⭐ مهم | Important</span>' : '';
+        const dueDateInfo = announcement.dueDate ? 
+            `<p class="announcement-due">📅 موعد التسليم: ${new Date(announcement.dueDate).toLocaleString('ar-EG')}</p>` : '';
+        
+        return `
+            <div class="announcement-card ${announcement.priority ? 'priority' : ''}">
+                <div class="announcement-header">
+                    <span class="announcement-type">${icon} ${label}</span>
+                    ${priorityBadge}
+                    <button onclick="deleteAnnouncement(${announcement.id})" class="btn-delete">🗑️ حذف</button>
+                </div>
+                <h4>${announcement.title}</h4>
+                <p class="announcement-content">${announcement.content}</p>
+                ${dueDateInfo}
+                <p class="announcement-meta">
+                    👤 ${announcement.createdBy} • 
+                    ⏰ ${new Date(announcement.createdAt).toLocaleString('ar-EG')}
+                </p>
+            </div>
+        `;
+    }).join('');
+}
+
+// تحديث نوع الإعلان لإظهار/إخفاء حقل موعد التسليم
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        const typeSelect = document.getElementById('announcementType');
+        if (typeSelect) {
+            typeSelect.addEventListener('change', (e) => {
+                const dueDateGroup = document.getElementById('dueDateGroup');
+                if (dueDateGroup) {
+                    dueDateGroup.style.display = e.target.value === 'assignment' ? 'block' : 'none';
+                }
+            });
+        }
+    });
 }

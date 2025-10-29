@@ -1806,3 +1806,188 @@ textarea {
         width: 100%;
     }
 }
+
+/* ===== Announcements & Assignments Styles ===== */
+
+.announcements-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.announcement-form-card,
+.announcements-list-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.announcement-form-card h4,
+.announcements-list-card h4 {
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.form-input::placeholder {
+    color: #94a3b8;
+}
+
+textarea.form-input {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.announcement-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.announcement-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.announcement-card.priority {
+    border-color: #f59e0b;
+    background: linear-gradient(to right, #fffbeb 0%, white 100%);
+}
+
+.announcement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.announcement-type {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.priority-badge {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.btn-delete {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.3s ease;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
+}
+
+.announcement-card h4 {
+    color: #1e293b;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.announcement-content {
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+}
+
+.announcement-due {
+    color: #0ea5e9;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.announcement-due.overdue {
+    color: #ef4444;
+}
+
+.announcement-meta {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.announcements-list .no-data {
+    text-align: center;
+    color: #94a3b8;
+    padding: 2rem;
+}
+
+.resource-item.urgent-announcement {
+    border-left: 4px solid #f59e0b;
+    background: linear-gradient(to right, #fffbeb 0%, white 100%);
+}
+
+.resource-item .resource-meta.overdue {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .announcements-section {
+        gap: 1rem;
+    }
+    
+    .announcement-form-card,
+    .announcements-list-card {
+        padding: 1rem;
+    }
+    
+    .announcement-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .btn-delete {
+        align-self: flex-end;
+    }
+}

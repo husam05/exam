@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=2.9">
-    <link rel="stylesheet" href="assets/css/animations.css?v=2.9">
+    <link rel="stylesheet" href="assets/css/styles.css?v=3.0">
+    <link rel="stylesheet" href="assets/css/animations.css?v=3.0">
 </head>
 <body>
     <header>
@@ -129,6 +129,9 @@
                     <button class="tab-btn" data-tab="examined">
                         📝 الممتحنون | Examined
                     </button>
+                    <button class="tab-btn" data-tab="announcements">
+                        📢 الواجبات والإعلانات | Assignments & Announcements
+                    </button>
                 </div>
 
                 <!-- Online Students Tab -->
@@ -202,6 +205,66 @@
                         <p class="no-data">لا توجد امتحانات | No exams yet</p>
                     </div>
                 </div>
+
+                <!-- Announcements and Assignments Tab -->
+                <div id="announcementsTab" class="tab-content">
+                    <div class="announcements-section">
+                        <h3>📢 إدارة الإعلانات والواجبات</h3>
+                        <p class="english-subtitle">Manage Announcements & Assignments</p>
+                        
+                        <!-- Add New Announcement -->
+                        <div class="announcement-form-card">
+                            <h4>إضافة إعلان أو واجب جديد</h4>
+                            <p class="english-subtitle">Add New Announcement or Assignment</p>
+                            
+                            <div class="form-group">
+                                <label for="announcementType">نوع الإعلان | Type:</label>
+                                <select id="announcementType" class="form-input">
+                                    <option value="announcement">📢 إعلان | Announcement</option>
+                                    <option value="assignment">📝 واجب | Assignment</option>
+                                    <option value="exam">📋 إعلان امتحان | Exam Notice</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="announcementTitle">العنوان | Title:</label>
+                                <input type="text" id="announcementTitle" class="form-input" 
+                                       placeholder="عنوان الإعلان أو الواجب">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="announcementContent">المحتوى | Content:</label>
+                                <textarea id="announcementContent" class="form-input" rows="4" 
+                                          placeholder="محتوى الإعلان أو تفاصيل الواجب"></textarea>
+                            </div>
+                            
+                            <div class="form-group" id="dueDateGroup" style="display: none;">
+                                <label for="assignmentDueDate">موعد التسليم | Due Date:</label>
+                                <input type="datetime-local" id="assignmentDueDate" class="form-input">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="announcementPriority">
+                                    إعلان مهم (سيظهر بشكل بارز) | Important (Will be highlighted)
+                                </label>
+                            </div>
+                            
+                            <button onclick="addAnnouncement()" class="btn primary" style="width: 100%; margin-top: 1rem;">
+                                ✅ نشر الإعلان | Publish
+                            </button>
+                        </div>
+
+                        <!-- Announcements List -->
+                        <div class="announcements-list-card">
+                            <h4>الإعلانات والواجبات المنشورة</h4>
+                            <p class="english-subtitle">Published Announcements & Assignments</p>
+                            <div id="announcementsList" class="announcements-list">
+                                <p class="no-data">لا توجد إعلانات حالياً | No announcements yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -263,7 +326,7 @@
                     <div class="stat-icon">📢</div>
                     <div class="stat-info">
                         <h4>إعلانات جديدة</h4>
-                        <p class="stat-number">2</p>
+                        <p class="stat-number" id="studentAnnouncementsCount">0</p>
                         <p class="english-subtitle">New Announcements</p>
                     </div>
                 </div>
@@ -292,7 +355,7 @@
                     <div class="card-icon">📚</div>
                     <h3>الواجبات والتكليفات</h3>
                     <p class="english-subtitle">Assignments</p>
-                    <div id="assignmentsList" class="resource-list">
+                    <div id="studentAssignmentsList" class="resource-list">
                         <div class="resource-item">
                             <div class="resource-info">
                                 <h4>لا توجد واجبات حالياً</h4>
@@ -307,22 +370,11 @@
                     <div class="card-icon">📢</div>
                     <h3>الإعلانات والتنبيهات</h3>
                     <p class="english-subtitle">Announcements</p>
-                    <div id="announcementsList" class="resource-list">
-                        <div class="resource-item urgent-announcement">
-                            <div class="resource-info">
-                                <p><strong>⚠️ تنبيه هام: موعد الامتحان</strong></p>
-                                <p class="english-subtitle"><strong>⚠️ Important: Exam Schedule</strong></p>
-                                <p>امتحان مادة مبادئ لينكس يوم الأحد الساعة 8:30 صباحاً</p>
-                                <p class="english-subtitle">Linux Principles Exam: Sunday, 8:30 AM</p>
-                                <p class="resource-meta">📅 التاريخ: 2/11/2025 | Date: November 2, 2025</p>
-                                <p class="resource-meta">د. حسام صالح مهدي | Dr. Husam Salah Mahdi</p>
-                            </div>
-                        </div>
+                    <div id="studentAnnouncementsList" class="resource-list">
                         <div class="resource-item">
                             <div class="resource-info">
-                                <p><strong>مرحباً بك في منصة التعليم الإلكتروني</strong></p>
-                                <p class="english-subtitle">Welcome to the E-Learning Platform</p>
-                                <p class="resource-meta">د. حسام صالح مهدي | Dr. Husam Salah Mahdi</p>
+                                <h4>لا توجد إعلانات حالياً</h4>
+                                <p class="english-subtitle">No announcements at this time</p>
                             </div>
                         </div>
                     </div>
@@ -552,11 +604,11 @@
     </footer>
 
     <!-- QR Code Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js?v=2.9"></script>
-    <script src="assets/js/platform-config.js?v=2.9"></script>
-    <script src="assets/js/questions.js?v=2.9"></script>
-    <script src="assets/js/doctor-monitor.js?v=2.9"></script>
-    <script src="assets/js/app.js?v=2.9"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js?v=3.0"></script>
+    <script src="assets/js/platform-config.js?v=3.0"></script>
+    <script src="assets/js/questions.js?v=3.0"></script>
+    <script src="assets/js/doctor-monitor.js?v=3.0"></script>
+    <script src="assets/js/app.js?v=3.0"></script>
 </body>
 </html>
 </html>

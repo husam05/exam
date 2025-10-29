@@ -384,6 +384,9 @@ function showDashboard() {
     // Update saved reports count
     updateSavedReportsCount();
     
+    // Update student announcements
+    updateStudentAnnouncements();
+    
     // Generate QR code for this student
     generateQRCode(state.studentId, state.studentName);
     
@@ -1327,4 +1330,93 @@ function showDoctorDashboard() {
     }
     refreshDoctorDashboard();
     setInterval(refreshDoctorDashboard, 10000);
+}
+
+// ===== Student Announcements Display =====
+
+function updateStudentAnnouncements() {
+    const ANNOUNCEMENTS_KEY = "platform_announcements";
+    const announcements = JSON.parse(localStorage.getItem(ANNOUNCEMENTS_KEY) || "[]");
+    
+    // Update count
+    const countEl = document.getElementById('studentAnnouncementsCount');
+    if (countEl) {
+        countEl.textContent = announcements.length;
+    }
+    
+    // Update announcements list
+    const announcementsListEl = document.getElementById('studentAnnouncementsList');
+    const assignmentsListEl = document.getElementById('studentAssignmentsList');
+    
+    const announcementsOnly = announcements.filter(a => a.type === 'announcement' || a.type === 'exam');
+    const assignmentsOnly = announcements.filter(a => a.type === 'assignment');
+    
+    // Render announcements
+    if (announcementsListEl) {
+        if (announcementsOnly.length === 0) {
+            announcementsListEl.innerHTML = `
+                <div class="resource-item">
+                    <div class="resource-info">
+                        <h4>لا توجد إعلانات حالياً</h4>
+                        <p class="english-subtitle">No announcements at this time</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            announcementsListEl.innerHTML = announcementsOnly.map(announcement => {
+                const typeIcons = {
+                    announcement: '📢',
+                    exam: '📋'
+                };
+                const icon = typeIcons[announcement.type] || '📢';
+                const priorityClass = announcement.priority ? 'urgent-announcement' : '';
+                const priorityMark = announcement.priority ? '⚠️ ' : '';
+                
+                return `
+                    <div class="resource-item ${priorityClass}">
+                        <div class="resource-info">
+                            <p><strong>${priorityMark}${icon} ${announcement.title}</strong></p>
+                            <p>${announcement.content}</p>
+                            <p class="resource-meta">👤 ${announcement.createdBy}</p>
+                            <p class="resource-meta">⏰ ${new Date(announcement.createdAt).toLocaleString('ar-EG')}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+    
+    // Render assignments
+    if (assignmentsListEl) {
+        if (assignmentsOnly.length === 0) {
+            assignmentsListEl.innerHTML = `
+                <div class="resource-item">
+                    <div class="resource-info">
+                        <h4>لا توجد واجبات حالياً</h4>
+                        <p class="english-subtitle">No assignments at this time</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            assignmentsListEl.innerHTML = assignmentsOnly.map(assignment => {
+                const dueDate = assignment.dueDate ? new Date(assignment.dueDate) : null;
+                const now = new Date();
+                const isOverdue = dueDate && dueDate < now;
+                const dueDateClass = isOverdue ? 'overdue' : '';
+                const dueDateText = dueDate ? 
+                    `<p class="resource-meta ${dueDateClass}">📅 موعد التسليم: ${dueDate.toLocaleString('ar-EG')} ${isOverdue ? '(متأخر)' : ''}</p>` : '';
+                
+                return `
+                    <div class="resource-item ${assignment.priority ? 'urgent-announcement' : ''}">
+                        <div class="resource-info">
+                            <h4>${assignment.priority ? '⚠️ ' : ''}📝 ${assignment.title}</h4>
+                            <p>${assignment.content}</p>
+                            ${dueDateText}
+                            <p class="resource-meta">👤 ${assignment.createdBy}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
 }
