@@ -1146,35 +1146,55 @@ function closeSavedReportsModal() {
 
 function renderSavedReports() {
     if (!elements.savedReportsList) return;
-    const history = loadSavedReports();
+    let history = loadSavedReports();
+
+    // فلترة التقارير حسب الصلاحيات
+    // إذا كان طالب، يرى تقاريره فقط
+    // إذا كان دكتور، يرى جميع التقارير
+    if (!state.isDoctor && state.studentId) {
+        history = history.filter(record => record.studentId === state.studentId);
+    }
 
     if (!history.length) {
-        elements.savedReportsList.innerHTML = `
-            <div class="saved-report-card">
-                <p>لا توجد تقارير محفوظة حالياً على هذا الجهاز.</p>
-                <p class="english-subtitle">No saved reports found on this device.</p>
-            </div>`;
+        const message = state.isDoctor 
+            ? `<div class="saved-report-card">
+                <p>لا توجد تقارير محفوظة حالياً.</p>
+                <p class="english-subtitle">No saved reports found.</p>
+              </div>`
+            : `<div class="saved-report-card">
+                <p>لا توجد تقارير محفوظة لك حالياً على هذا الجهاز.</p>
+                <p class="english-subtitle">You have no saved reports on this device.</p>
+              </div>`;
+        elements.savedReportsList.innerHTML = message;
         return;
     }
 
     const reportCards = history.map((record, index) => {
         const start = record.startTime ? new Date(record.startTime).toLocaleString() : '—';
         const finish = record.finishTime ? new Date(record.finishTime).toLocaleString() : '—';
+        
+        // إضافة معلومات الطالب للدكتور فقط
+        const studentInfo = state.isDoctor 
+            ? `<div class="saved-report-header">
+                <span><strong>الطالب:</strong> ${record.studentName} (${record.studentId})</span>
+                <span class="report-score">${record.score} / ${record.total} • ${record.percentage}%</span>
+              </div>`
+            : `<div class="saved-report-header">
+                <span><strong>نتيجتك:</strong> ${record.score} / ${record.total} • ${record.percentage}%</span>
+              </div>`;
+        
         return `
         <div class="saved-report-card">
-            <div class="saved-report-header">
-                <span>${record.studentName} (${record.studentId})</span>
-                <span>${record.score} / ${record.total} • ${record.percentage}%</span>
+            ${studentInfo}
+            <div class="saved-report-meta">
+                <span>⏱️ البداية: ${start}</span> • <span>✅ النهاية: ${finish}</span>
             </div>
             <div class="saved-report-meta">
-                <span>البداية: ${start}</span> • <span>النهاية: ${finish}</span>
-            </div>
-            <div class="saved-report-meta">
-                <span>معرف الجلسة: ${record.examUid}</span>
+                <span>🔑 معرف الجلسة: ${record.examUid}</span>
             </div>
             <div class="saved-report-actions">
-                <button class="btn secondary" data-action="download" data-index="${index}">تنزيل التقرير</button>
-                <button class="btn outline" data-action="view" data-index="${index}">عرض في نافذة جديدة</button>
+                <button class="btn secondary" data-action="download" data-index="${index}">📥 تنزيل التقرير | Download</button>
+                <button class="btn outline" data-action="view" data-index="${index}">👁️ عرض | View</button>
             </div>
         </div>`;
     }).join('\n');
