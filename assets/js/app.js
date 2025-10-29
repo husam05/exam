@@ -1169,7 +1169,7 @@ function renderSavedReports() {
         return;
     }
 
-    const reportCards = history.map((record, index) => {
+    const reportCards = history.map((record) => {
         const start = record.startTime ? new Date(record.startTime).toLocaleString() : '—';
         const finish = record.finishTime ? new Date(record.finishTime).toLocaleString() : '—';
         
@@ -1193,8 +1193,8 @@ function renderSavedReports() {
                 <span>🔑 معرف الجلسة: ${record.examUid}</span>
             </div>
             <div class="saved-report-actions">
-                <button class="btn secondary" data-action="download" data-index="${index}">📥 تنزيل التقرير | Download</button>
-                <button class="btn outline" data-action="view" data-index="${index}">👁️ عرض | View</button>
+                <button class="btn secondary" data-action="download" data-uid="${record.examUid}">📥 تنزيل التقرير | Download</button>
+                <button class="btn outline" data-action="view" data-uid="${record.examUid}">👁️ عرض | View</button>
             </div>
         </div>`;
     }).join('\n');
@@ -1205,19 +1205,19 @@ function renderSavedReports() {
 function handleSavedReportAction(event) {
     const target = event.target.closest('button');
     if (!target) return;
-    const index = Number.parseInt(target.dataset.index, 10);
-    if (Number.isNaN(index)) return;
+    const examUid = target.dataset.uid;
+    if (!examUid) return;
 
     if (target.dataset.action === 'view') {
-        viewSavedReport(index);
+        viewSavedReport(examUid);
     } else if (target.dataset.action === 'download') {
-        downloadSavedReport(index);
+        downloadSavedReport(examUid);
     }
 }
 
-function viewSavedReport(index) {
+function viewSavedReport(examUid) {
     const history = loadSavedReports();
-    const record = history[index];
+    const record = history.find(r => r.examUid === examUid);
     if (!record || !record.reportHtml) {
         alert('تعذر فتح التقرير المحفوظ.');
         return;
@@ -1228,9 +1228,9 @@ function viewSavedReport(index) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function downloadSavedReport(index) {
+function downloadSavedReport(examUid) {
     const history = loadSavedReports();
-    const record = history[index];
+    const record = history.find(r => r.examUid === examUid);
     if (!record || !record.reportHtml) {
         alert('تعذر تنزيل التقرير المحفوظ.');
         return;
