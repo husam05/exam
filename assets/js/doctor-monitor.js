@@ -181,12 +181,17 @@ function updateResults() {
                 
                 return `
                     <div class="result-card">
-                        <h4>${record.studentName} (${record.studentId})</h4>
-                        <div class="result-score">${score} / ${total}</div>
-                        <div class="result-grade">${grade.arabicLabel} | ${grade.englishLabel}</div>
-                        <p style="margin-top: 0.5rem; font-size: 0.9rem;">
-                            ⏰ ${new Date(record.finishTime).toLocaleString('ar-EG')}
-                        </p>
+                        <div class="result-card-content">
+                            <h4>${record.studentName} (${record.studentId})</h4>
+                            <div class="result-score">${score} / ${total}</div>
+                            <div class="result-grade">${grade.arabicLabel} | ${grade.englishLabel}</div>
+                            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                                ⏰ ${new Date(record.finishTime).toLocaleString('ar-EG')}
+                            </p>
+                        </div>
+                        <button onclick="deleteExamRecord('${record.examUid}')" class="btn-delete-small" title="حذف التقرير">
+                            🗑️
+                        </button>
                     </div>
                 `;
             }).join('');
@@ -317,6 +322,11 @@ function updateExaminedStudents(filter = 'all') {
                                 <span class="detail-label">منذ | Time ago:</span>
                                 <span>⏰ ${timeAgo}</span>
                             </div>
+                        </div>
+                        <div class="examined-actions">
+                            <button onclick="deleteExamRecord('${record.examUid}')" class="btn-delete-exam">
+                                🗑️ حذف التقرير | Delete Report
+                            </button>
                         </div>
                     </div>
                 `;
@@ -456,4 +466,41 @@ if (typeof document !== 'undefined') {
             });
         }
     });
+}
+
+// ===== Delete Exam Record =====
+
+function deleteExamRecord(examUid) {
+    // تأكيد الحذف
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذا التقرير؟\nسيتم حذف التقرير نهائياً ولا يمكن استرجاعه.\n\nAre you sure you want to delete this report?\nThis action cannot be undone.')) {
+        return;
+    }
+    
+    // حذف من localStorage
+    let history = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+    const recordToDelete = history.find(r => r.examUid === examUid);
+    
+    if (!recordToDelete) {
+        alert('❌ لم يتم العثور على التقرير | Report not found');
+        return;
+    }
+    
+    // تصفية السجلات لإزالة التقرير المحدد
+    history = history.filter(record => record.examUid !== examUid);
+    
+    // حفظ التحديثات
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(history));
+    
+    // تسجيل النشاط
+    logActivity(
+        recordToDelete.studentId, 
+        recordToDelete.studentName, 
+        `تم حذف التقرير بواسطة الأستاذ | Report deleted by professor - ${examUid}`
+    );
+    
+    // تحديث العرض
+    refreshDoctorDashboard();
+    
+    // رسالة نجاح
+    alert(`✅ تم حذف تقرير الطالب ${recordToDelete.studentName} بنجاح\n\nReport deleted successfully for student ${recordToDelete.studentName}`);
 }
