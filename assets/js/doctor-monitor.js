@@ -498,8 +498,10 @@ function deleteExamRecord(examUid) {
         `تم حذف التقرير بواسطة الأستاذ | Report deleted by professor - ${examUid}`
     );
     
-    // تحديث العرض
-    refreshDoctorDashboard();
+    // تحديث العرض - فقط الأقسام المتعلقة بالامتحانات
+    updateActivityLog();
+    updateResults();
+    updateExaminedStudents(currentFilter);
     
     // رسالة نجاح
     alert(`✅ تم حذف تقرير الطالب ${recordToDelete.studentName} بنجاح\n\nReport deleted successfully for student ${recordToDelete.studentName}`);
