@@ -32,7 +32,21 @@ function handleDoctorLogout() {
 }
 
 function refreshDoctorDashboard() {
-    console.log("Refreshing doctor dashboard...");
+    console.log("🔄 Refreshing doctor dashboard...");
+    
+    // Debug: Check all storage keys
+    const allKeys = Object.keys(localStorage);
+    console.log("📦 Available localStorage keys:", allKeys);
+    
+    // Debug: Check specific exam data
+    const linuxHistory = localStorage.getItem("linuxExamHistory");
+    const legacyHistory = localStorage.getItem("exam_history");
+    const examHistory = localStorage.getItem("examHistory");
+    
+    console.log("📊 linuxExamHistory data:", linuxHistory ? JSON.parse(linuxHistory).length + " records" : "empty");
+    console.log("📊 exam_history data:", legacyHistory ? JSON.parse(legacyHistory).length + " records" : "empty");
+    console.log("📊 examHistory data:", examHistory ? JSON.parse(examHistory).length + " records" : "empty");
+    
     if (typeof migrateLegacyExamHistory === "function") {
         migrateLegacyExamHistory();
     }
@@ -78,6 +92,70 @@ function setupStorageSync() {
             console.error('Storage sync error:', err);
         }
     });
+}
+
+// ===== Debug Functions =====
+function showRawData() {
+    const debugDiv = document.getElementById('debugDataDisplay');
+    if (!debugDiv) return;
+    
+    let output = '<strong>🔍 تشخيص البيانات المباشر:</strong><br><br>';
+    
+    // Check all localStorage keys
+    const allKeys = Object.keys(localStorage);
+    output += `<strong>📦 مفاتيح التخزين (${allKeys.length}):</strong><br>`;
+    allKeys.forEach(key => {
+        const data = localStorage.getItem(key);
+        let size = data ? data.length : 0;
+        output += `• ${key}: ${size} chars<br>`;
+    });
+    
+    output += '<br><strong>📊 بيانات الامتحانات:</strong><br>';
+    
+    // Check linuxExamHistory
+    const linuxHistory = localStorage.getItem('linuxExamHistory');
+    if (linuxHistory) {
+        try {
+            const parsed = JSON.parse(linuxHistory);
+            output += `• linuxExamHistory: ${parsed.length} سجل<br>`;
+            parsed.forEach((record, i) => {
+                output += `  ${i+1}. ${record.studentName || 'بلا اسم'} (${record.studentId || 'بلا رقم'}) - ${record.score || 0}/${record.total || 29}<br>`;
+            });
+        } catch (e) {
+            output += `• linuxExamHistory: خطأ في القراءة - ${e.message}<br>`;
+        }
+    } else {
+        output += '• linuxExamHistory: فارغ<br>';
+    }
+    
+    // Check legacy keys
+    ['exam_history', 'examHistory'].forEach(key => {
+        const data = localStorage.getItem(key);
+        if (data) {
+            try {
+                const parsed = JSON.parse(data);
+                output += `• ${key}: ${parsed.length} سجل قديم<br>`;
+            } catch (e) {
+                output += `• ${key}: خطأ في القراءة<br>`;
+            }
+        }
+    });
+    
+    // Search for LX032 specifically
+    output += '<br><strong>🎯 البحث عن LX032:</strong><br>';
+    let found = false;
+    allKeys.forEach(key => {
+        const data = localStorage.getItem(key);
+        if (data && data.toLowerCase().includes('lx032')) {
+            output += `• وُجد في ${key}<br>`;
+            found = true;
+        }
+    });
+    if (!found) {
+        output += '• لم يوجد LX032 في أي مفتاح<br>';
+    }
+    
+    debugDiv.innerHTML = output;
 }
 
 function trackStudentOnline(studentId, studentName, action) {
@@ -212,15 +290,32 @@ function updateActivityLog() {
 }
 
 function updateResults() {
+    console.log("📈 Updating results display...");
+    
     const history = typeof loadSavedReports === 'function'
         ? loadSavedReports()
         : JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
     
+    console.log("📊 Found exam records:", history.length);
+    if (history.length > 0) {
+        console.log("📋 Sample record:", history[0]);
+        console.log("🔍 All student IDs:", history.map(r => r.studentId));
+        
+        // Check specifically for LX032
+        const lx032Records = history.filter(r => r.studentId && r.studentId.toUpperCase().includes('LX032'));
+        console.log("🎯 LX032 records found:", lx032Records.length);
+        if (lx032Records.length > 0) {
+            console.log("📝 LX032 data:", lx032Records);
+        }
+    }
+    
     if (!elements.resultsList) {
+        console.warn("⚠️ resultsList element not found!");
         return;
     }
 
     if (!history.length) {
+        console.log("📭 No exam history found");
         elements.resultsList.innerHTML = '<p class="no-data">لا توجد نتائج حالياً | No results yet</p>';
         return;
     }

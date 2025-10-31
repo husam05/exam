@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=20251031-002">
-    <link rel="stylesheet" href="assets/css/animations.css?v=20251031-002">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20251031-004">
+    <link rel="stylesheet" href="assets/css/animations.css?v=20251031-004">
 </head>
 <body>
     <header>
@@ -124,6 +124,20 @@
                 </div>
                 <button id="clearAlerts" class="btn neutral">
                     ✔️ تم الاطلاع | Mark as Reviewed
+                </button>
+            </div>
+
+            <!-- Debug Panel -->
+            <div class="card">
+                <div class="alert-header-text">
+                    <h3>🔧 تشخيص البيانات</h3>
+                    <p class="english-subtitle">Data Diagnostic</p>
+                </div>
+                <div id="debugDataDisplay" style="font-family: monospace; font-size: 0.9rem; background: #f8f9fa; padding: 1rem; border-radius: 8px; max-height: 300px; overflow-y: auto;">
+                    <p>البيانات ستظهر هنا عند الضغط على تحديث...</p>
+                </div>
+                <button onclick="showRawData()" class="btn secondary" style="margin-top: 1rem;">
+                    📊 عرض البيانات الخام | Show Raw Data
                 </button>
             </div>
 
@@ -619,10 +633,10 @@
 
     <!-- QR Code Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="assets/js/platform-config.js?v=20251031-002"></script>
-    <script src="assets/js/questions.js?v=20251031-002"></script>
-    <script src="assets/js/doctor-monitor.js?v=20251031-002"></script>
-    <script src="assets/js/app.js?v=20251031-002"></script>
+    <script src="assets/js/platform-config.js?v=20251031-004"></script>
+    <script src="assets/js/questions.js?v=20251031-004"></script>
+    <script src="assets/js/doctor-monitor.js?v=20251031-004"></script>
+    <script src="assets/js/app.js?v=20251031-004"></script>
 </body>
 </html></body>
 </html>
