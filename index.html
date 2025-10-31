@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=20251031-004">
-    <link rel="stylesheet" href="assets/css/animations.css?v=20251031-004">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20251031-005">
+    <link rel="stylesheet" href="assets/css/animations.css?v=20251031-005">
 </head>
 <body>
     <header>
@@ -79,28 +79,31 @@
 
             <!-- Monitoring Stats -->
             <div class="quick-stats">
-                <div class="stat-card">
-                    <div class="stat-icon">🟢</div>
+                <div class="stat-card realtime-card">
+                    <div class="stat-icon pulse-green">🟢</div>
                     <div class="stat-info">
                         <h4>طلاب متصلون الآن</h4>
                         <p class="stat-number" id="onlineCount">0</p>
                         <p class="english-subtitle">Students Online</p>
+                        <div class="realtime-indicator">🔴 مباشر</div>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📝</div>
+                <div class="stat-card realtime-card">
+                    <div class="stat-icon pulse-blue">📝</div>
                     <div class="stat-info">
                         <h4>يقومون بالامتحان</h4>
                         <p class="stat-number" id="examingCount">0</p>
                         <p class="english-subtitle">Taking Exam</p>
+                        <div class="realtime-indicator">⏱️ نشط</div>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">✅</div>
+                <div class="stat-card realtime-card">
+                    <div class="stat-icon pulse-green">✅</div>
                     <div class="stat-info">
                         <h4>أنهوا الامتحان</h4>
                         <p class="stat-number" id="completedCount">0</p>
                         <p class="english-subtitle">Completed</p>
+                        <div class="realtime-indicator">✓ مكتمل</div>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -127,18 +130,65 @@
                 </button>
             </div>
 
-            <!-- Debug Panel -->
-            <div class="card">
-                <div class="alert-header-text">
-                    <h3>🔧 تشخيص البيانات</h3>
-                    <p class="english-subtitle">Data Diagnostic</p>
+            <!-- System Monitor Dashboard -->
+            <div class="card system-monitor">
+                <div class="monitor-header">
+                    <h3>� مراقبة النظام المباشرة</h3>
+                    <p class="english-subtitle">Live System Monitor</p>
+                    <div class="monitor-status">
+                        <span id="systemStatus" class="status-indicator online">النظام متصل</span>
+                        <span id="lastUpdateTime" class="update-time">آخر تحديث: --</span>
+                    </div>
                 </div>
-                <div id="debugDataDisplay" style="font-family: monospace; font-size: 0.9rem; background: #f8f9fa; padding: 1rem; border-radius: 8px; max-height: 300px; overflow-y: auto;">
-                    <p>البيانات ستظهر هنا عند الضغط على تحديث...</p>
+                
+                <div class="monitor-grid">
+                    <div class="monitor-card">
+                        <div class="monitor-icon">📊</div>
+                        <div class="monitor-info">
+                            <h4>بيانات الامتحانات</h4>
+                            <div id="examDataStatus" class="monitor-value">-- سجل</div>
+                        </div>
+                    </div>
+                    
+                    <div class="monitor-card">
+                        <div class="monitor-icon">👥</div>
+                        <div class="monitor-info">
+                            <h4>حالة الطلاب</h4>
+                            <div id="studentsStatus" class="monitor-value">-- طالب نشط</div>
+                        </div>
+                    </div>
+                    
+                    <div class="monitor-card">
+                        <div class="monitor-icon">📈</div>
+                        <div class="monitor-info">
+                            <h4>أداء النظام</h4>
+                            <div id="performanceStatus" class="monitor-value">--</div>
+                        </div>
+                    </div>
+                    
+                    <div class="monitor-card">
+                        <div class="monitor-icon">🎯</div>
+                        <div class="monitor-info">
+                            <h4>البحث السريع</h4>
+                            <input type="text" id="quickSearch" placeholder="ابحث عن طالب..." class="quick-search-input">
+                        </div>
+                    </div>
                 </div>
-                <button onclick="showRawData()" class="btn secondary" style="margin-top: 1rem;">
-                    📊 عرض البيانات الخام | Show Raw Data
-                </button>
+                
+                <div class="analytics-summary" id="analyticsData">
+                    <div class="analytics-item">
+                        <span class="analytics-label">متوسط الدرجات:</span>
+                        <span id="avgScore" class="analytics-value">--</span>
+                    </div>
+                    <div class="analytics-item">
+                        <span class="analytics-label">معدل النجاح:</span>
+                        <span id="passRate" class="analytics-value">--</span>
+                    </div>
+                    <div class="analytics-item">
+                        <span class="analytics-label">الامتحانات اليوم:</span>
+                        <span id="todayExams" class="analytics-value">--</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Monitoring Tabs -->
@@ -633,10 +683,10 @@
 
     <!-- QR Code Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="assets/js/platform-config.js?v=20251031-004"></script>
-    <script src="assets/js/questions.js?v=20251031-004"></script>
-    <script src="assets/js/doctor-monitor.js?v=20251031-004"></script>
-    <script src="assets/js/app.js?v=20251031-004"></script>
+    <script src="assets/js/platform-config.js?v=20251031-005"></script>
+    <script src="assets/js/questions.js?v=20251031-005"></script>
+    <script src="assets/js/doctor-monitor.js?v=20251031-005"></script>
+    <script src="assets/js/app.js?v=20251031-005"></script>
 </body>
 </html></body>
 </html>

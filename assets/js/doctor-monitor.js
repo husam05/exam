@@ -32,20 +32,7 @@ function handleDoctorLogout() {
 }
 
 function refreshDoctorDashboard() {
-    console.log("🔄 Refreshing doctor dashboard...");
-    
-    // Debug: Check all storage keys
-    const allKeys = Object.keys(localStorage);
-    console.log("📦 Available localStorage keys:", allKeys);
-    
-    // Debug: Check specific exam data
-    const linuxHistory = localStorage.getItem("linuxExamHistory");
-    const legacyHistory = localStorage.getItem("exam_history");
-    const examHistory = localStorage.getItem("examHistory");
-    
-    console.log("📊 linuxExamHistory data:", linuxHistory ? JSON.parse(linuxHistory).length + " records" : "empty");
-    console.log("📊 exam_history data:", legacyHistory ? JSON.parse(legacyHistory).length + " records" : "empty");
-    console.log("📊 examHistory data:", examHistory ? JSON.parse(examHistory).length + " records" : "empty");
+    updateSystemStatus();
     
     if (typeof migrateLegacyExamHistory === "function") {
         migrateLegacyExamHistory();
@@ -59,6 +46,7 @@ function refreshDoctorDashboard() {
     updateExamNotifications();
     updateExaminedStudents(currentFilter);
     renderDoctorAnnouncements();
+    updateDataAnalytics();
 }
 
 // ===== Real-time sync across tabs (same device) =====
@@ -94,68 +82,176 @@ function setupStorageSync() {
     });
 }
 
-// ===== Debug Functions =====
-function showRawData() {
-    const debugDiv = document.getElementById('debugDataDisplay');
-    if (!debugDiv) return;
+// ===== Professional System Monitor Functions =====
+function updateSystemStatus() {
+    const statusEl = document.getElementById('systemStatus');
+    const timeEl = document.getElementById('lastUpdateTime');
     
-    let output = '<strong>🔍 تشخيص البيانات المباشر:</strong><br><br>';
-    
-    // Check all localStorage keys
-    const allKeys = Object.keys(localStorage);
-    output += `<strong>📦 مفاتيح التخزين (${allKeys.length}):</strong><br>`;
-    allKeys.forEach(key => {
-        const data = localStorage.getItem(key);
-        let size = data ? data.length : 0;
-        output += `• ${key}: ${size} chars<br>`;
-    });
-    
-    output += '<br><strong>📊 بيانات الامتحانات:</strong><br>';
-    
-    // Check linuxExamHistory
-    const linuxHistory = localStorage.getItem('linuxExamHistory');
-    if (linuxHistory) {
-        try {
-            const parsed = JSON.parse(linuxHistory);
-            output += `• linuxExamHistory: ${parsed.length} سجل<br>`;
-            parsed.forEach((record, i) => {
-                output += `  ${i+1}. ${record.studentName || 'بلا اسم'} (${record.studentId || 'بلا رقم'}) - ${record.score || 0}/${record.total || 29}<br>`;
-            });
-        } catch (e) {
-            output += `• linuxExamHistory: خطأ في القراءة - ${e.message}<br>`;
-        }
-    } else {
-        output += '• linuxExamHistory: فارغ<br>';
+    if (statusEl) {
+        statusEl.textContent = 'النظام متصل | System Online';
+        statusEl.className = 'status-indicator online';
     }
     
-    // Check legacy keys
-    ['exam_history', 'examHistory'].forEach(key => {
-        const data = localStorage.getItem(key);
-        if (data) {
-            try {
-                const parsed = JSON.parse(data);
-                output += `• ${key}: ${parsed.length} سجل قديم<br>`;
-            } catch (e) {
-                output += `• ${key}: خطأ في القراءة<br>`;
-            }
-        }
-    });
-    
-    // Search for LX032 specifically
-    output += '<br><strong>🎯 البحث عن LX032:</strong><br>';
-    let found = false;
-    allKeys.forEach(key => {
-        const data = localStorage.getItem(key);
-        if (data && data.toLowerCase().includes('lx032')) {
-            output += `• وُجد في ${key}<br>`;
-            found = true;
-        }
-    });
-    if (!found) {
-        output += '• لم يوجد LX032 في أي مفتاح<br>';
+    if (timeEl) {
+        timeEl.textContent = `آخر تحديث: ${new Date().toLocaleTimeString('ar-EG')}`;
     }
     
-    debugDiv.innerHTML = output;
+    // Update exam data status
+    const examStatusEl = document.getElementById('examDataStatus');
+    if (examStatusEl) {
+        const history = typeof loadSavedReports === 'function' 
+            ? loadSavedReports() 
+            : JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+        examStatusEl.textContent = `${history.length} سجل امتحان`;
+    }
+    
+    // Update students status
+    const studentsStatusEl = document.getElementById('studentsStatus');
+    if (studentsStatusEl) {
+        const onlineStudents = JSON.parse(localStorage.getItem(ONLINE_STUDENTS_KEY) || "{}");
+        const activeCount = Object.keys(onlineStudents).length;
+        studentsStatusEl.textContent = `${activeCount} طالب نشط`;
+    }
+    
+    // Update performance
+    const performanceEl = document.getElementById('performanceStatus');
+    if (performanceEl) {
+        const now = Date.now();
+        const loadTime = now - (window.doctorLoadTime || now);
+        performanceEl.textContent = loadTime < 1000 ? 'ممتاز' : loadTime < 3000 ? 'جيد' : 'بطيء';
+    }
+}
+
+function updateDataAnalytics() {
+    const history = typeof loadSavedReports === 'function' 
+        ? loadSavedReports() 
+        : JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+    
+    if (history.length === 0) return;
+    
+    // Calculate average score
+    const avgScoreEl = document.getElementById('avgScore');
+    if (avgScoreEl) {
+        const scores = history.map(r => {
+            const total = r.total || r.autoGradedTotal || 29;
+            const score = r.score || 0;
+            return total > 0 ? (score / total) * 100 : 0;
+        });
+        const average = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+        avgScoreEl.textContent = average + '%';
+        avgScoreEl.className = `analytics-value ${average >= 70 ? 'good' : average >= 50 ? 'average' : 'poor'}`;
+    }
+    
+    // Calculate pass rate
+    const passRateEl = document.getElementById('passRate');
+    if (passRateEl) {
+        const passed = history.filter(r => {
+            const total = r.total || r.autoGradedTotal || 29;
+            const score = r.score || 0;
+            return total > 0 && (score / total) * 100 >= 60;
+        }).length;
+        const passRate = ((passed / history.length) * 100).toFixed(1);
+        passRateEl.textContent = passRate + '%';
+        passRateEl.className = `analytics-value ${passRate >= 70 ? 'good' : passRate >= 50 ? 'average' : 'poor'}`;
+    }
+    
+    // Count today's exams
+    const todayExamsEl = document.getElementById('todayExams');
+    if (todayExamsEl) {
+        const today = new Date().toDateString();
+        const todayCount = history.filter(r => {
+            const examDate = r.finishTime || r.savedAt;
+            return examDate && new Date(examDate).toDateString() === today;
+        }).length;
+        todayExamsEl.textContent = todayCount;
+        todayExamsEl.className = 'analytics-value';
+    }
+}
+
+function setupQuickSearch() {
+    const searchInput = document.getElementById('quickSearch');
+    if (!searchInput) return;
+    
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        if (!query) {
+            // Reset all displays
+            updateResults();
+            updateExaminedStudents(currentFilter);
+            return;
+        }
+        
+        // Filter results based on search
+        filterResultsBySearch(query);
+    });
+}
+
+function filterResultsBySearch(query) {
+    const history = typeof loadSavedReports === 'function' 
+        ? loadSavedReports() 
+        : JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+    
+    const filtered = history.filter(record => 
+        (record.studentName && record.studentName.toLowerCase().includes(query)) ||
+        (record.studentId && record.studentId.toLowerCase().includes(query))
+    );
+    
+    // Update results with filtered data
+    displayFilteredResults(filtered, query);
+    
+    // Update search status
+    const statusEl = document.getElementById('performanceStatus');
+    if (statusEl) {
+        statusEl.textContent = `${filtered.length} نتيجة`;
+    }
+}
+
+function displayFilteredResults(filteredHistory, searchQuery) {
+    if (!elements.resultsList) return;
+    
+    if (filteredHistory.length === 0) {
+        elements.resultsList.innerHTML = `<p class="no-data">لا توجد نتائج للبحث: "${searchQuery}"</p>`;
+        return;
+    }
+    
+    const sortedHistory = [...filteredHistory].sort((a, b) => {
+        const aTime = new Date(a.finishTime || a.savedAt || 0).getTime();
+        const bTime = new Date(b.finishTime || b.savedAt || 0).getTime();
+        return bTime - aTime;
+    });
+    
+    elements.resultsList.innerHTML = sortedHistory.map(record => {
+        const total = record.total || record.autoGradedTotal || 29;
+        const score = record.score || 0;
+        const percentage = total > 0 ? ((score / total) * 100).toFixed(1) : 0;
+        const grade = getGradeStatus(percentage);
+        const finishTime = record.finishTime || record.savedAt;
+        const displayTime = finishTime ? new Date(finishTime).toLocaleString('ar-EG') : '—';
+        
+        return `
+            <div class="result-card search-result">
+                <div class="result-card-content">
+                    <h4>${record.studentName} (${record.studentId}) <span class="search-match">🔍</span></h4>
+                    <div class="result-score">${score} / ${total}</div>
+                    <div class="result-grade">${grade.arabicLabel} | ${grade.englishLabel}</div>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                        ⏰ ${displayTime}
+                    </p>
+                </div>
+                <button onclick="deleteExamRecord('${record.examUid}')" class="btn-delete-small" title="حذف التقرير">
+                    🗑️
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+// Initialize system monitoring
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.doctorLoadTime = Date.now();
+        setTimeout(setupQuickSearch, 1000);
+    });
 }
 
 function trackStudentOnline(studentId, studentName, action) {
@@ -290,32 +386,15 @@ function updateActivityLog() {
 }
 
 function updateResults() {
-    console.log("📈 Updating results display...");
-    
     const history = typeof loadSavedReports === 'function'
         ? loadSavedReports()
         : JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
     
-    console.log("📊 Found exam records:", history.length);
-    if (history.length > 0) {
-        console.log("📋 Sample record:", history[0]);
-        console.log("🔍 All student IDs:", history.map(r => r.studentId));
-        
-        // Check specifically for LX032
-        const lx032Records = history.filter(r => r.studentId && r.studentId.toUpperCase().includes('LX032'));
-        console.log("🎯 LX032 records found:", lx032Records.length);
-        if (lx032Records.length > 0) {
-            console.log("📝 LX032 data:", lx032Records);
-        }
-    }
-    
     if (!elements.resultsList) {
-        console.warn("⚠️ resultsList element not found!");
         return;
     }
 
     if (!history.length) {
-        console.log("📭 No exam history found");
         elements.resultsList.innerHTML = '<p class="no-data">لا توجد نتائج حالياً | No results yet</p>';
         return;
     }
