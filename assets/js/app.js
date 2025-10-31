@@ -196,10 +196,16 @@ function buildDoctorAlertFromRecord(record, seen = false) {
 }
 
 function cacheDom() {
+    console.log("=== CACHING DOM ELEMENTS ===");
     elements.loginForm = document.getElementById("loginForm");
     elements.studentIdInput = document.getElementById("studentId");
     elements.studentPasswordInput = document.getElementById("studentPassword");
     elements.loginFeedback = document.getElementById("loginFeedback");
+    
+    console.log("Login form found:", !!elements.loginForm);
+    console.log("Student ID input found:", !!elements.studentIdInput);
+    console.log("Student password input found:", !!elements.studentPasswordInput);
+    console.log("Login feedback found:", !!elements.loginFeedback);
     elements.statusBanner = document.getElementById("statusBanner");
     elements.loginSection = document.getElementById("loginSection");
     elements.dashboardSection = document.getElementById("dashboardSection");
@@ -265,7 +271,15 @@ function cacheDom() {
 }
 
 function bindEvents() {
-    elements.loginForm.addEventListener("submit", handleLogin);
+    console.log("=== BINDING EVENTS ===");
+    console.log("Login form element:", elements.loginForm);
+    
+    if (elements.loginForm) {
+        elements.loginForm.addEventListener("submit", handleLogin);
+        console.log("✅ Login form event listener bound successfully");
+    } else {
+        console.error("❌ Login form not found - cannot bind event listener");
+    }
     
     if (elements.logoutBtn) {
         elements.logoutBtn.addEventListener("click", handleLogout);
@@ -448,11 +462,16 @@ function showStatus(message) {
 }
 
 function handleLogin(event) {
+    console.log("=== HANDLE LOGIN CALLED ===");
+    console.log("Event:", event);
+    
     event.preventDefault();
     elements.loginFeedback.textContent = "";
     elements.loginFeedback.classList.remove("error-text", "success-text");
     const enteredId = elements.studentIdInput.value.trim();
     const enteredPassword = elements.studentPasswordInput.value.trim();
+    
+    console.log("Form values retrieved:", { enteredId, enteredPassword });
 
     if (!enteredId || !enteredPassword) {
         elements.loginFeedback.textContent = "Please enter both your Student ID and password.";
