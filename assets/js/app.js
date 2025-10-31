@@ -459,24 +459,51 @@ function handleLogin(event) {
         elements.loginFeedback.classList.add("error-text");
         return;
     }
+    
+    // Show processing feedback
+    elements.loginFeedback.textContent = "جاري التحقق من البيانات... | Verifying credentials...";
+    elements.loginFeedback.classList.add("info-text");
 
     // Check if it's doctor login
-    console.log("Checking credentials:", enteredId, enteredPassword);
-    console.log("Doctor credentials:", DOCTOR_CREDENTIALS);
+    console.log("=== DOCTOR LOGIN DEBUG ===");
+    console.log("Entered ID:", `"${enteredId}"`);
+    console.log("Entered Password:", `"${enteredPassword}"`);
+    console.log("Expected Username:", `"${DOCTOR_CREDENTIALS.username}"`);
+    console.log("Expected Password:", `"${DOCTOR_CREDENTIALS.password}"`);
+    console.log("ID Match:", enteredId === DOCTOR_CREDENTIALS.username);
+    console.log("Password Match:", enteredPassword === DOCTOR_CREDENTIALS.password);
+    console.log("Both Match:", enteredId === DOCTOR_CREDENTIALS.username && enteredPassword === DOCTOR_CREDENTIALS.password);
     
     if (enteredId === DOCTOR_CREDENTIALS.username && enteredPassword === DOCTOR_CREDENTIALS.password) {
-        console.log("Doctor login detected!");
+        console.log("✅ Doctor login detected!");
         state.isDoctor = true;
         
+        console.log("Checking showDoctorDashboard function...");
+        console.log("Function exists:", typeof showDoctorDashboard === 'function');
+        
         if (typeof showDoctorDashboard === 'function') {
-            showDoctorDashboard();
+            console.log("Calling showDoctorDashboard...");
+            try {
+                elements.loginFeedback.textContent = "مرحباً دكتور! جاري تحميل لوحة التحكم... | Welcome Doctor! Loading dashboard...";
+                elements.loginFeedback.classList.remove("error-text", "info-text");
+                elements.loginFeedback.classList.add("success-text");
+                showDoctorDashboard();
+                console.log("✅ Doctor dashboard shown successfully");
+            } catch (error) {
+                console.error("❌ Error calling showDoctorDashboard:", error);
+                elements.loginFeedback.textContent = "خطأ في النظام - يرجى تحديث الصفحة | System error - please refresh";
+                elements.loginFeedback.classList.remove("info-text", "success-text");
+                elements.loginFeedback.classList.add("error-text");
+            }
         } else {
-            console.error("showDoctorDashboard function not found!");
+            console.error("❌ showDoctorDashboard function not found!");
             elements.loginFeedback.textContent = "خطأ في النظام - يرجى تحديث الصفحة | System error - please refresh";
             elements.loginFeedback.classList.add("error-text");
         }
         return;
     }
+    
+    console.log("❌ Doctor login failed - proceeding with student login...");
 
     if (!state.rosterLoaded) {
         elements.loginFeedback.textContent = "Student roster is still loading. Please wait.";

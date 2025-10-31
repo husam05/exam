@@ -1251,6 +1251,14 @@ textarea {
     color: #b91c1c;
 }
 
+.success-text {
+    color: var(--success);
+}
+
+.info-text {
+    color: #2563eb;
+}
+
 .timer-value.urgent {
     color: #b91c1c;
 }
