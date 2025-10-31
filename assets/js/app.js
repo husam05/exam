@@ -5,8 +5,6 @@ const TYPE_LABELS = {
 
 const TYPE_LABELS_EN = {
     mcq: "Multiple Choice",
-        notifyDoctorOfCompletion(record);
-        syncExamNotificationsWithHistory(trimmed);
     truefalse: "True / False"
 };
 
