@@ -88,7 +88,7 @@ function updateSystemStatus() {
     const timeEl = document.getElementById('lastUpdateTime');
     
     if (statusEl) {
-        statusEl.textContent = 'النظام متصل | System Online';
+        statusEl.textContent = 'النظام متصل';
         statusEl.className = 'status-indicator online';
     }
     
