@@ -5,10 +5,15 @@ const TYPE_LABELS = {
 
 const TYPE_LABELS_EN = {
     mcq: "Multiple Choice",
+        notifyDoctorOfCompletion(record);
+        syncExamNotificationsWithHistory(trimmed);
     truefalse: "True / False"
 };
 
 const LOCAL_STORAGE_KEY = "linuxExamHistory";
+const MAX_HISTORY_RECORDS = 100;
+const EXAM_NOTIFICATIONS_KEY = "doctorExamAlerts";
+const LEGACY_HISTORY_KEYS = ["exam_history", "examHistory"];
 const ONLINE_STUDENTS_KEY = "onlineStudents";
 const DOCTOR_CREDENTIALS = {
     username: "Dr",
@@ -38,6 +43,7 @@ const state = {
 const elements = {};
 
 document.addEventListener("DOMContentLoaded", () => {
+    migrateLegacyExamHistory();
     cacheDom();
     bindEvents();
     loadRoster();
@@ -50,6 +56,144 @@ document.addEventListener("DOMContentLoaded", () => {
         showStatus("Run the exam through a local or hosted web server (e.g. VS Code Live Server or GitHub Pages) so that roster validation works.");
     }
 });
+
+function migrateLegacyExamHistory() {
+    if (typeof window === "undefined" || !window.localStorage) {
+        return;
+    }
+
+    try {
+        const aggregated = [];
+
+        const currentRaw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (currentRaw) {
+            const current = JSON.parse(currentRaw);
+            if (Array.isArray(current)) {
+                aggregated.push(...current);
+            }
+        }
+
+        let migrated = false;
+        LEGACY_HISTORY_KEYS.forEach(key => {
+            const legacyRaw = window.localStorage.getItem(key);
+            if (!legacyRaw) {
+                return;
+            }
+            const legacyData = JSON.parse(legacyRaw);
+            if (Array.isArray(legacyData)) {
+                aggregated.push(...legacyData);
+            }
+            window.localStorage.removeItem(key);
+            migrated = true;
+        });
+
+        if (!migrated && currentRaw) {
+            return;
+        }
+
+        if (aggregated.length === 0) {
+            window.localStorage.removeItem(LOCAL_STORAGE_KEY);
+            return;
+        }
+
+        const deduped = new Map();
+        const fallback = [];
+
+        aggregated.forEach(record => {
+            if (record && record.examUid) {
+                const existing = deduped.get(record.examUid);
+                if (!existing) {
+                    deduped.set(record.examUid, record);
+                    return;
+                }
+
+                const existingTime = new Date(existing.savedAt || existing.finishTime || 0).getTime();
+                const candidateTime = new Date(record.savedAt || record.finishTime || 0).getTime();
+                if (candidateTime > existingTime) {
+                    deduped.set(record.examUid, record);
+                }
+            } else if (record) {
+                fallback.push(record);
+            }
+        });
+
+        const merged = [...deduped.values(), ...fallback];
+
+        merged.sort((a, b) => {
+            const aTime = new Date(a.savedAt || a.finishTime || 0).getTime();
+            const bTime = new Date(b.savedAt || b.finishTime || 0).getTime();
+            return bTime - aTime;
+        });
+
+    const trimmed = merged.slice(0, MAX_HISTORY_RECORDS);
+    window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(trimmed));
+    syncExamNotificationsWithHistory(trimmed);
+    console.log("✅ Migrated legacy exam history records", { total: trimmed.length });
+    } catch (error) {
+        console.error("❌ Failed to migrate exam history:", error);
+    }
+}
+
+function syncExamNotificationsWithHistory(records) {
+    if (typeof window === "undefined" || !window.localStorage || !Array.isArray(records)) {
+        return;
+    }
+
+    try {
+        const existingRaw = window.localStorage.getItem(EXAM_NOTIFICATIONS_KEY) || "[]";
+        const existing = JSON.parse(existingRaw);
+        const alertsMap = new Map(Array.isArray(existing) ? existing.map(alert => [alert.examUid, alert]) : []);
+        let changed = false;
+
+        records.slice(0, MAX_HISTORY_RECORDS).forEach(record => {
+            if (!record || !record.examUid) {
+                return;
+            }
+            if (!alertsMap.has(record.examUid)) {
+                const summary = buildDoctorAlertFromRecord(record, false);
+                alertsMap.set(summary.examUid, summary);
+                changed = true;
+            }
+        });
+
+        if (!changed) {
+            return;
+        }
+
+        const sorted = Array.from(alertsMap.values()).sort((a, b) => {
+            const aTime = new Date(a.finishTime || a.createdAt || 0).getTime();
+            const bTime = new Date(b.finishTime || b.createdAt || 0).getTime();
+            return bTime - aTime;
+        }).slice(0, 30);
+
+        window.localStorage.setItem(EXAM_NOTIFICATIONS_KEY, JSON.stringify(sorted));
+    } catch (error) {
+        console.error("❌ Failed to sync exam notifications:", error);
+    }
+}
+
+function buildDoctorAlertFromRecord(record, seen = false) {
+    const total = record.total || record.autoGradedTotal || 29;
+    const score = record.score || 0;
+    const percentage = record.percentage !== undefined
+        ? record.percentage
+        : (total > 0 ? Math.round((score / total) * 100) : 0);
+
+    const finishTime = record.finishTime || record.savedAt || new Date().toISOString();
+    const examUid = record.examUid || `${record.studentId || "candidate"}-${finishTime}`;
+
+    return {
+        examUid,
+        studentId: record.studentId || "غير معروف",
+        studentName: record.studentName || "Student",
+        score,
+        total,
+        percentage,
+        finishTime,
+        createdAt: record.savedAt || new Date().toISOString(),
+        seen
+    };
+}
 
 function cacheDom() {
     elements.loginForm = document.getElementById("loginForm");
@@ -79,6 +223,10 @@ function cacheDom() {
     elements.doctorDashboard = document.getElementById("doctorDashboard");
     elements.doctorLogout = document.getElementById("doctorLogout");
     elements.refreshMonitor = document.getElementById("refreshMonitor");
+    elements.doctorAlertsCard = document.getElementById("doctorAlertsCard");
+    elements.doctorAlertsList = document.getElementById("doctorAlertsList");
+    elements.doctorAlertsBadge = document.getElementById("doctorAlertsBadge");
+    elements.clearAlerts = document.getElementById("clearAlerts");
     elements.onlineCount = document.getElementById("onlineCount");
     elements.examingCount = document.getElementById("examingCount");
     elements.completedCount = document.getElementById("completedCount");
@@ -129,6 +277,10 @@ function bindEvents() {
     
     if (elements.refreshMonitor) {
         elements.refreshMonitor.addEventListener("click", refreshDoctorDashboard);
+    }
+
+    if (elements.clearAlerts) {
+        elements.clearAlerts.addEventListener("click", acknowledgeExamAlerts);
     }
     
     if (elements.viewMyHistory) {
@@ -469,7 +621,7 @@ function downloadQRCode() {
 }
 
 function updateSavedReportsCount() {
-    const history = JSON.parse(localStorage.getItem("exam_history") || "[]");
+    const history = loadSavedReports();
     const studentHistory = history.filter(h => h.studentId === state.studentId);
     if (elements.savedReportsCount) {
         elements.savedReportsCount.textContent = studentHistory.length;
@@ -1247,6 +1399,7 @@ function loadSavedReports() {
         return [];
     }
     try {
+        migrateLegacyExamHistory();
         const raw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
         if (!raw) return [];
         const parsed = JSON.parse(raw);
@@ -1286,10 +1439,37 @@ function saveExamToLocalHistory(reportHtml) {
             }))
         };
         history.unshift(record);
-        const trimmed = history.slice(0, 10);
-        window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(trimmed));
+    const trimmed = history.slice(0, MAX_HISTORY_RECORDS);
+    window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(trimmed));
+    notifyDoctorOfCompletion(record);
+    syncExamNotificationsWithHistory(trimmed);
     } catch (error) {
         console.error('Unable to persist exam history:', error);
+    }
+}
+
+function notifyDoctorOfCompletion(record) {
+    if (typeof window === "undefined" || !window.localStorage || !record) {
+        return;
+    }
+
+    try {
+    const existingRaw = window.localStorage.getItem(EXAM_NOTIFICATIONS_KEY) || "[]";
+    const parsed = JSON.parse(existingRaw);
+    const notifications = Array.isArray(parsed) ? parsed : [];
+        const summary = buildDoctorAlertFromRecord(record, false);
+        const index = notifications.findIndex(alert => alert.examUid === summary.examUid);
+
+        if (index >= 0) {
+            notifications[index] = { ...notifications[index], ...summary, seen: false };
+        } else {
+            notifications.unshift(summary);
+        }
+
+        const trimmed = notifications.slice(0, 30);
+        window.localStorage.setItem(EXAM_NOTIFICATIONS_KEY, JSON.stringify(trimmed));
+    } catch (error) {
+        console.error('❌ Failed to log exam completion for doctor:', error);
     }
 }
 

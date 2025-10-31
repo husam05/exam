@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/styles.css?v=20251029-003">
-    <link rel="stylesheet" href="assets/css/animations.css?v=20251029-003">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20251031-002">
+    <link rel="stylesheet" href="assets/css/animations.css?v=20251031-002">
 </head>
 <body>
     <header>
@@ -113,6 +113,20 @@
                 </div>
             </div>
 
+            <!-- Exam Alerts -->
+            <div id="doctorAlertsCard" class="card doctor-alerts hidden">
+                <div class="alert-header-text">
+                    <h3>تنبيهات الامتحانات</h3>
+                    <p class="english-subtitle">Exam Alerts</p>
+                </div>
+                <div id="doctorAlertsList" class="alerts-list">
+                    <p class="no-data">لا توجد تنبيهات امتحان حالياً | No exam alerts</p>
+                </div>
+                <button id="clearAlerts" class="btn neutral">
+                    ✔️ تم الاطلاع | Mark as Reviewed
+                </button>
+            </div>
+
             <!-- Monitoring Tabs -->
             <div class="card">
                 <div class="monitor-tabs">
@@ -124,6 +138,7 @@
                     </button>
                     <button class="tab-btn" data-tab="results">
                         📈 النتائج | Results
+                        <span class="tab-badge hidden" id="doctorAlertsBadge"></span>
                     </button>
                     <button class="tab-btn" data-tab="examined">
                         📝 الممتحنون | Examined
@@ -604,10 +619,10 @@
 
     <!-- QR Code Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="assets/js/platform-config.js?v=20251029-003"></script>
-    <script src="assets/js/questions.js?v=20251029-003"></script>
-    <script src="assets/js/doctor-monitor.js?v=20251029-003"></script>
-    <script src="assets/js/app.js?v=20251029-003"></script>
+    <script src="assets/js/platform-config.js?v=20251031-002"></script>
+    <script src="assets/js/questions.js?v=20251031-002"></script>
+    <script src="assets/js/doctor-monitor.js?v=20251031-002"></script>
+    <script src="assets/js/app.js?v=20251031-002"></script>
 </body>
 </html></body>
 </html>

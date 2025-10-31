@@ -1,6 +1,8 @@
 // ===== Doctor Dashboard Functions =====
 
 let currentFilter = 'all';
+const MAX_RESULTS_DISPLAY = 50;
+const DOCTOR_EXAM_ALERTS_KEY = "doctorExamAlerts";
 
 function showDoctorDashboard() {
     console.log("Doctor logged in - showing dashboard");
@@ -12,6 +14,9 @@ function showDoctorDashboard() {
     
     // Auto-refresh every 10 seconds
     setInterval(refreshDoctorDashboard, 10000);
+
+    // Live updates across tabs on same device via storage events
+    setupStorageSync();
 }
 
 function handleDoctorLogout() {
@@ -28,11 +33,51 @@ function handleDoctorLogout() {
 
 function refreshDoctorDashboard() {
     console.log("Refreshing doctor dashboard...");
+    if (typeof migrateLegacyExamHistory === "function") {
+        migrateLegacyExamHistory();
+    }
+    if (typeof updateSavedReportsCount === "function") {
+        updateSavedReportsCount();
+    }
     updateOnlineStudents();
     updateActivityLog();
     updateResults();
+    updateExamNotifications();
     updateExaminedStudents(currentFilter);
     renderDoctorAnnouncements();
+}
+
+// ===== Real-time sync across tabs (same device) =====
+function setupStorageSync() {
+    if (typeof window === 'undefined' || !window.addEventListener) return;
+    let scheduled = false;
+    const relevantKeys = new Set([
+        typeof LOCAL_STORAGE_KEY !== 'undefined' ? LOCAL_STORAGE_KEY : 'linuxExamHistory',
+        typeof ONLINE_STUDENTS_KEY !== 'undefined' ? ONLINE_STUDENTS_KEY : 'onlineStudents',
+        'activityLog',
+        'platform_announcements',
+        DOCTOR_EXAM_ALERTS_KEY
+    ]);
+
+    const scheduleRefresh = () => {
+        if (scheduled) return;
+        scheduled = true;
+        setTimeout(() => {
+            scheduled = false;
+            try { refreshDoctorDashboard(); } catch (e) { console.error(e); }
+        }, 500);
+    };
+
+    window.addEventListener('storage', (event) => {
+        try {
+            if (!event || !event.key) return;
+            if (!relevantKeys.has(event.key)) return;
+            // Ignore events triggered by this same tab; storage event doesn't fire in same tab by spec.
+            scheduleRefresh();
+        } catch (err) {
+            console.error('Storage sync error:', err);
+        }
+    });
 }
 
 function trackStudentOnline(studentId, studentName, action) {
@@ -167,36 +212,51 @@ function updateActivityLog() {
 }
 
 function updateResults() {
-    const history = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+    const history = typeof loadSavedReports === 'function'
+        ? loadSavedReports()
+        : JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
     
-    if (elements.resultsList) {
-        if (history.length === 0) {
-            elements.resultsList.innerHTML = '<p class="no-data">لا توجد نتائج حالياً | No results yet</p>';
-        } else {
-            elements.resultsList.innerHTML = history.slice(0, 10).map(record => {
-                const total = record.total || record.autoGradedTotal || 29;
-                const score = record.score || 0;
-                const percentage = total > 0 ? ((score / total) * 100).toFixed(1) : 0;
-                const grade = getGradeStatus(percentage);
-                
-                return `
-                    <div class="result-card">
-                        <div class="result-card-content">
-                            <h4>${record.studentName} (${record.studentId})</h4>
-                            <div class="result-score">${score} / ${total}</div>
-                            <div class="result-grade">${grade.arabicLabel} | ${grade.englishLabel}</div>
-                            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
-                                ⏰ ${new Date(record.finishTime).toLocaleString('ar-EG')}
-                            </p>
-                        </div>
-                        <button onclick="deleteExamRecord('${record.examUid}')" class="btn-delete-small" title="حذف التقرير">
-                            🗑️
-                        </button>
-                    </div>
-                `;
-            }).join('');
-        }
+    if (!elements.resultsList) {
+        return;
     }
+
+    if (!history.length) {
+        elements.resultsList.innerHTML = '<p class="no-data">لا توجد نتائج حالياً | No results yet</p>';
+        return;
+    }
+
+    const sortedHistory = [...history].sort((a, b) => {
+        const aTime = new Date(a.finishTime || a.savedAt || 0).getTime();
+        const bTime = new Date(b.finishTime || b.savedAt || 0).getTime();
+        return bTime - aTime;
+    });
+
+    const toRender = sortedHistory.slice(0, MAX_RESULTS_DISPLAY);
+
+    elements.resultsList.innerHTML = toRender.map(record => {
+        const total = record.total || record.autoGradedTotal || 29;
+        const score = record.score || 0;
+        const percentage = total > 0 ? ((score / total) * 100).toFixed(1) : 0;
+        const grade = getGradeStatus(percentage);
+        const finishTime = record.finishTime || record.savedAt;
+        const displayTime = finishTime ? new Date(finishTime).toLocaleString('ar-EG') : '—';
+        
+        return `
+            <div class="result-card">
+                <div class="result-card-content">
+                    <h4>${record.studentName} (${record.studentId})</h4>
+                    <div class="result-score">${score} / ${total}</div>
+                    <div class="result-grade">${grade.arabicLabel} | ${grade.englishLabel}</div>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                        ⏰ ${displayTime}
+                    </p>
+                </div>
+                <button onclick="deleteExamRecord('${record.examUid}')" class="btn-delete-small" title="حذف التقرير">
+                    🗑️
+                </button>
+            </div>
+        `;
+    }).join('');
 }
 
 function getTimeAgo(timestamp) {
@@ -227,7 +287,9 @@ function switchTab(tabName) {
 }
 
 function updateExaminedStudents(filter = 'all') {
-    const history = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+    const history = typeof loadSavedReports === 'function'
+        ? loadSavedReports()
+        : JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
     let filteredHistory = history;
     
     // تطبيق الفلتر
@@ -253,7 +315,13 @@ function updateExaminedStudents(filter = 'all') {
     }
     
     if (filteredHistory.length > 0) {
-        const scores = filteredHistory.map(r => {
+        const sortedHistory = [...filteredHistory].sort((a, b) => {
+            const aTime = new Date(a.finishTime || a.savedAt || 0).getTime();
+            const bTime = new Date(b.finishTime || b.savedAt || 0).getTime();
+            return bTime - aTime;
+        });
+
+        const scores = sortedHistory.map(r => {
             const total = r.total || r.autoGradedTotal || 29;
             const score = r.score || 0;
             return total > 0 ? (score / total) * 100 : 0;
@@ -285,13 +353,20 @@ function updateExaminedStudents(filter = 'all') {
         if (filteredHistory.length === 0) {
             examinedListEl.innerHTML = '<p class="no-data">لا توجد امتحانات في هذه الفترة | No exams in this period</p>';
         } else {
-            examinedListEl.innerHTML = filteredHistory.map((record, index) => {
+            const sortedHistory = [...filteredHistory].sort((a, b) => {
+                const aTime = new Date(a.finishTime || a.savedAt || 0).getTime();
+                const bTime = new Date(b.finishTime || b.savedAt || 0).getTime();
+                return bTime - aTime;
+            });
+
+            examinedListEl.innerHTML = sortedHistory.map((record, index) => {
                 const total = record.total || record.autoGradedTotal || 29;
                 const score = record.score || 0;
                 const percentage = total > 0 ? ((score / total) * 100).toFixed(1) : 0;
                 const grade = getGradeStatus(percentage);
-                const examDate = new Date(record.finishTime);
-                const timeAgo = getTimeAgo(record.finishTime);
+                const finishTimestamp = record.finishTime || record.savedAt;
+                const examDate = finishTimestamp ? new Date(finishTimestamp) : null;
+                const timeAgo = finishTimestamp ? getTimeAgo(finishTimestamp) : '—';
                 const sessionId = record.examUid || 'N/A';
                 
                 return `
@@ -316,7 +391,7 @@ function updateExaminedStudents(filter = 'all') {
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">وقت الانتهاء | Finished:</span>
-                                <span>📅 ${examDate.toLocaleString('ar-EG')}</span>
+                                <span>📅 ${examDate ? examDate.toLocaleString('ar-EG') : '—'}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">منذ | Time ago:</span>
@@ -347,6 +422,96 @@ function filterExamined(filter) {
     });
     
     updateExaminedStudents(filter);
+}
+
+function updateExamNotifications() {
+    if (!elements.doctorAlertsCard || !elements.doctorAlertsList) {
+        return;
+    }
+
+    try {
+        const raw = localStorage.getItem(DOCTOR_EXAM_ALERTS_KEY) || "[]";
+        const notifications = JSON.parse(raw);
+        const alerts = Array.isArray(notifications) ? notifications : [];
+        const unseen = alerts.filter(alert => !alert.seen).length;
+
+        if (elements.doctorAlertsBadge) {
+            if (unseen > 0) {
+                elements.doctorAlertsBadge.textContent = unseen;
+                elements.doctorAlertsBadge.classList.remove('hidden');
+            } else {
+                elements.doctorAlertsBadge.textContent = '';
+                elements.doctorAlertsBadge.classList.add('hidden');
+            }
+        }
+
+        if (!alerts.length) {
+            elements.doctorAlertsCard.classList.add('hidden');
+            elements.doctorAlertsList.innerHTML = '<p class="no-data">لا توجد تنبيهات امتحان حالياً | No exam alerts</p>';
+            return;
+        }
+
+        elements.doctorAlertsCard.classList.remove('hidden');
+        elements.doctorAlertsList.innerHTML = alerts.slice(0, 10).map(alert => {
+            const finishTime = alert.finishTime ? new Date(alert.finishTime).toLocaleString('ar-EG') : '—';
+            const statusText = alert.seen ? '✅ تمت المراجعة | Reviewed' : '⚠️ جديد | New';
+            const itemClass = alert.seen ? 'alert-item' : 'alert-item new-alert';
+            return `
+                <div class="${itemClass}">
+                    <div class="alert-header">
+                        <strong>${alert.studentName}</strong>
+                        <span class="english-subtitle">${alert.studentId}</span>
+                    </div>
+                    <div class="alert-body">
+                        <span>📊 ${alert.score} / ${alert.total} (${alert.percentage}%)</span>
+                        <span>⏰ ${finishTime}</span>
+                    </div>
+                    <div class="alert-status">${statusText}</div>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('❌ Failed to update exam notifications:', error);
+    }
+}
+
+function acknowledgeExamAlerts() {
+    try {
+        const raw = localStorage.getItem(DOCTOR_EXAM_ALERTS_KEY);
+        if (!raw) {
+            updateExamNotifications();
+            return;
+        }
+        const notifications = JSON.parse(raw);
+        if (!Array.isArray(notifications) || !notifications.length) {
+            updateExamNotifications();
+            return;
+        }
+
+        const updated = notifications.map(alert => ({ ...alert, seen: true }));
+        localStorage.setItem(DOCTOR_EXAM_ALERTS_KEY, JSON.stringify(updated));
+        updateExamNotifications();
+    } catch (error) {
+        console.error('❌ Failed to acknowledge exam alerts:', error);
+    }
+}
+
+function removeExamNotification(examUid) {
+    try {
+        const raw = localStorage.getItem(DOCTOR_EXAM_ALERTS_KEY);
+        if (!raw) {
+            return;
+        }
+        const notifications = JSON.parse(raw);
+        if (!Array.isArray(notifications) || !notifications.length) {
+            return;
+        }
+
+        const filtered = notifications.filter(alert => alert.examUid !== examUid);
+        localStorage.setItem(DOCTOR_EXAM_ALERTS_KEY, JSON.stringify(filtered));
+    } catch (error) {
+        console.error('❌ Failed to remove exam notification:', error);
+    }
 }
 
 // ===== Announcements & Assignments Management =====
@@ -519,6 +684,7 @@ function deleteExamRecord(examUid) {
     
     // حفظ التحديثات
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(history));
+    removeExamNotification(examUid);
     
     // تسجيل النشاط
     logActivity(
@@ -530,6 +696,7 @@ function deleteExamRecord(examUid) {
     // تحديث العرض - فقط الأقسام المتعلقة بالامتحانات
     updateActivityLog();
     updateResults();
+    updateExamNotifications();
     updateExaminedStudents(currentFilter);
     
     // رسالة نجاح
